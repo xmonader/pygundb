@@ -15,8 +15,9 @@ def get_state_of(node, key):
 
 def new_node(name, **kwargs):
     # node with meta
-    return {'_': {'#':name, '>':{} }, **kwargs}
-
+    node = {'_': {'#':name, '>':{k:0 for k in kwargs}}, **kwargs}
+    print("NODE IS :" , node)
+    return node
 
 
 # conflict resolution algorithm 
@@ -76,6 +77,7 @@ def ham_mix(change, graph):
                 diff[soul] = new_node(soul)
 
             graph[soul] = graph.get(soul, new_node(soul))
+            print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
             graph[soul][key], diff[soul][key] = val, val
             graph[soul]['_']['>'][key], diff[soul]['_']['>'][key] = state, state
     return diff

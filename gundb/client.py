@@ -27,7 +27,7 @@ class GunClient:
     def __init__(self, wsendpoint="ws://localhost:8000/gun"):
         self.wsendpoint = wsendpoint
         self.ws = None
-        self.backend = Memory()
+        self.backend = DummyKV()
 
     async def put(self, soul, **kwargs):
         async with websockets.connect(self.wsendpoint) as ws:
@@ -60,7 +60,9 @@ class GunClient:
                 for k, v in node.items():
                     if k == "_":
                         continue
-                    self.backend.put(soul, k, v, diff[soul]['_']['>'][k])
+                    kstate = diff[soul]['_']['>'][k]
+                    print("KSTATE: ", kstate)
+                    self.backend.put(soul, k, v, kstate)
             return self.backend.get(soul, key)
 
 async def test():

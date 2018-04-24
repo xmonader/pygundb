@@ -8,7 +8,7 @@ class RedisKV:
 
     def put(self, soul, key, value, state):
         key = "{soul}:{key}:{state}".format(**locals())
-        self.r.set(key, json.dumps(value))
+        self.r.set(key, value)
 
 
     def get(self, soul, key=None):
@@ -32,3 +32,6 @@ class RedisKV:
             db[k] = v
 
         return db.items()
+
+    def __getitem__(self, soul):
+        return self.get(soul, None)

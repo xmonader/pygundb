@@ -31,3 +31,6 @@ class UDB:
 
     def list(self):
         return self.db.items()
+
+    def __getitem__(self, soul):
+        return self.get(soul, None)
