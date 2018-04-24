@@ -83,7 +83,7 @@ def gun(ws):
                         uid = trackid(str(uuid.uuid4()))
                         loggraph(graph)
                         resp = {'@':soul, '#':uid, 'ok':True}
-                        print("DIFF:", diff)
+                        # print("DIFF:", diff)
                         for soul, node in diff.items():
                             for k, v in node.items():
                                 if k == "_":

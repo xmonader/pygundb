@@ -34,8 +34,8 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
     incoming_value = incoming_value or str(incoming_value)
 
 
-    print("MACHINE STATE: ", machine_state, " INCOMING STATE: ", incoming_state, " CURRENT STATE: ", current_state, " INCOMING VAL:", incoming_value, " CURRENT VAL: ", current_value )
-    print(list(map(type, [machine_state, incoming_state, current_state, incoming_value, current_value])))
+    # print("MACHINE STATE: ", machine_state, " INCOMING STATE: ", incoming_state, " CURRENT STATE: ", current_state, " INCOMING VAL:", incoming_value, " CURRENT VAL: ", current_value )
+    # print(list(map(type, [machine_state, incoming_state, current_state, incoming_value, current_value])))
     if machine_state < incoming_state:
         return {'defer': True}
     

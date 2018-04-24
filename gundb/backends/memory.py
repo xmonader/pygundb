@@ -12,10 +12,11 @@ class Memory:
         self.db[soul]['_'][key] = state
 
     def get(self, soul, key=None):
+        # print("SOUL: ", soul, " KEY : ", key)
         ret = {'#': soul, '_':{'#':soul, '>':{}}}
         res = None
         if soul in self.db:
-            if isinstance(key, str):
+            if key and isinstance(key, str):
                 res = {**ret, **self.db.get(soul)}
                 return res.get(key, {})
             else:

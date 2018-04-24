@@ -39,7 +39,7 @@ class GunClient:
             # print("RESP: {} ".format(resp))
             return resp
         
-    async def get(self, soul, k=None):
+    async def get(self, soul, key=None):
         async with websockets.connect(self.wsendpoint) as ws:
             ch = format_get_request(soul)
             ch_str = json.dumps(ch)
@@ -61,18 +61,18 @@ class GunClient:
                     if k == "_":
                         continue
                     self.backend.put(soul, k, v, diff[soul]['_']['>'][k])
-            return self.backend.get(soul, k)
+            return self.backend.get(soul, key)
 
 async def test():
 
     c = GunClient()
-    print(c.backend)
+    print(c.backend.db)
     await c.put('box', w=10, h=20)
     box = await c.get('box')
     print("Box is: ", box)
     w = await c.get('box', 'w')
     print("W is : ", w)
-    print(c.backend)
+    print(c.backend.db)
 
 def cltest():
     loop = asyncio.get_event_loop()
