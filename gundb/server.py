@@ -62,18 +62,23 @@ def loggraph(graph):
 def gun(ws):
 
     global peers, graph
-    # print("Got connection: ", ws)
+    print("Got connection: ", ws)
     peers.append(ws)
     try:
         while not ws.closed:
             msgstr = ws.receive() 
-            # print("MSG :", msgstr)
+            print("MSG :", msgstr)
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
                 if not isinstance(msg, list):
                     msg = [msg]
                 for payload in msg:
+                    print("********************\n\n")
+                    print("payload: ")
+                    print(payload)
+
+                    print("********************\n\n")
                     if isinstance(payload, str):
                         payload = json.loads(payload)
                     if 'put' in payload:
@@ -83,12 +88,12 @@ def gun(ws):
                         uid = trackid(str(uuid.uuid4()))
                         loggraph(graph)
                         resp = {'@':soul, '#':uid, 'ok':True}
-                        # print("DIFF:", diff)
+                        print("DIFF:", diff)
                         for soul, node in diff.items():
                             for k, v in node.items():
                                 if k == "_":
                                     continue
-                                # val = json.dumps(v)
+                                val = json.dumps(v)
                                 app.backend.put(soul, k, v, diff[soul]['_']['>'][k])
 
                     elif 'get' in payload:
@@ -104,7 +109,7 @@ def gun(ws):
     except Exception as e:
         print("ERR:" ,e)
         traceback.print_exc(file=sys.stdout)
-    # print("Connection closed for ws: ", ws)
+    print("Connection closed for ws: ", ws)
     peers.remove(ws)
-    # print("Peers now are: ", peers)
+    print("Peers now are: ", peers)
 
