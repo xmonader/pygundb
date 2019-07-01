@@ -1,10 +1,13 @@
 import dbm
-
+import os
 # unix db
 class UDB:
     def __init__(self, path="/tmp/gun.db"):
-        self.db = dbm.open(path)
-
+        self.db = None
+        if os.path.exists(path):
+            self.db = dbm.open(path)
+        else:
+            self.db = dbm.open(path, "c")
 
     def put(self, soul, key, value, state):
         # soul -> {field:{'state':state, 'val':val, rel: relation}}
@@ -30,7 +33,7 @@ class UDB:
             self.db.close()
 
     def list(self):
-        return self.db.items()
+        return {k:self.db[k] for k in self.db.keys() } 
 
     def __getitem__(self, soul):
         return self.get(soul, None)
