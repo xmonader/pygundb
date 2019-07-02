@@ -1,0 +1,3 @@
+METADATA = '_'
+STATE = '>'
+SOUL = '#'
