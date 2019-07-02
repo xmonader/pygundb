@@ -1,6 +1,6 @@
 import json
 import redis 
-
+from ..consts import *
 
 class RedisKV:
     def __init__(self, host="localhost",port=6379):
@@ -12,7 +12,7 @@ class RedisKV:
 
 
     def get(self, soul, key=None):
-        ret = {'#': soul, '_':{'#':soul}}
+        ret = {SOUL: soul, METADATA:{SOUL:soul}}
         if key is None:
             keys = [k for k in self.r.scan_iter(soul+":"+"*")]
         else:
@@ -20,7 +20,7 @@ class RedisKV:
 
         for k in keys:
             sol, key, state = k.split(":")
-            ret['_']['>'][key] = state 
+            ret[METADATA][STATE][key] = state 
             ret[key] = self.r.get(key)
 
         return ret
@@ -29,7 +29,7 @@ class RedisKV:
     def list(self):
         db = {}
         for k in self.r.keys():
-            db[k] = v
+            db[k] = self.r.get(k)
 
         return db.items()
 

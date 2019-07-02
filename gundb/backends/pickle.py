@@ -1,6 +1,7 @@
 from pickle import load, dump
 import os
 import traceback
+from ..consts import METADATA, STATE, SOUL
 
 class Pickle:
     def __init__(self):
@@ -12,9 +13,9 @@ class Pickle:
     def put(self, soul, key, value, state):
         # soul -> {field:{'state':state, 'val':val, rel: relation}}
         if soul not in self.db:
-            self.db[soul] = {'_':{}}
+            self.db[soul] = {METADATA:{}}
         self.db[soul][key] = value
-        self.db[soul]['_'][key] = state
+        self.db[soul][METADATA][key] = state
         
         with open(self.dbpath, "wb") as f:
             try:
@@ -36,7 +37,7 @@ class Pickle:
 
     def get(self, soul, key=None):
         # print("SOUL: ", soul, " KEY : ", key)
-        ret = {'#': soul, '_':{'#':soul, '>':{}}}
+        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
         res = None
         if soul in self.db:
             if key and isinstance(key, str):

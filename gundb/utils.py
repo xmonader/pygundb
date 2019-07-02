@@ -17,10 +17,13 @@ def get_state_of(node, key):
 def new_node(name, **kwargs):
     # node with meta
     node = {METADATA: {SOUL:name, STATE:{k:0 for k in kwargs}}, **kwargs}
-    print("NODE IS :" , node)
     return node
 
-
+def ensure_state(node):
+    name = node[METADATA][SOUL]
+    if STATE not in node[METADATA]:
+        node[METADATA][STATE] = {k:0 for k in node if k!=SOUL}
+    return node
 # conflict resolution algorithm 
 def HAM(machine_state, incoming_state, current_state, incoming_value, current_value):
     # TODO: unify the result of the return
@@ -67,7 +70,7 @@ def ham_mix(change, graph):
     diff = {}
     for soul, node in change.items():
         for key, val in node.items():
-            if key == METADATA:
+            if key in [METADATA, SOUL,STATE]:
                 continue
             state = get_state_of(node, key) or 0
             graphnode = graph.get(soul, {})
@@ -84,7 +87,12 @@ def ham_mix(change, graph):
             graph[soul] = graph.get(soul, new_node(soul))
             print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
             graph[soul][key], diff[soul][key] = val, val
-            graph[soul][METADATA][STATE][key], diff[soul][METADATA][STATE][key] = state, state
+            graph[soul] = ensure_state(graph[soul])
+            diff[soul] = ensure_state(diff[soul])
+
+            graph[soul][METADATA][STATE][key] = state
+            diff[soul][METADATA][STATE][key] = state
+
     return diff
 
 def lex_from_graph(lex, graph):
