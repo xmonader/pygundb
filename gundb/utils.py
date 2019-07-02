@@ -1,21 +1,22 @@
 import time
 import uuid
+from .consts import STATE, METADATA, SOUL
 
 def newuid():
     return str(uuid.uuid4())
 
 def get_state(node):
-    if "_" in node:
-        return node['_']['>']
-    return {}
+    if METADATA in node and STATE in node[METADATA]:
+        return node[METADATA][STATE]
+    return {'>':{}}
 
 def get_state_of(node, key):
     s = get_state(node)
-    return s.get(key, None) #FIXME: should be 0?
+    return s.get(key, 0) #FIXME: should be 0?
 
 def new_node(name, **kwargs):
     # node with meta
-    node = {'_': {'#':name, '>':{k:0 for k in kwargs}}, **kwargs}
+    node = {METADATA: {SOUL:name, STATE:{k:0 for k in kwargs}}, **kwargs}
     print("NODE IS :" , node)
     return node
 
@@ -29,11 +30,15 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
     if current_state in ["None", None]:
         current_state = 0
     
+
     incoming_state = int(incoming_state)
     current_state = int(current_state)
-    current_value = current_value or str(current_value)
-    incoming_value = incoming_value or str(incoming_value)
 
+    if not isinstance(current_value, str):
+        current_value = str(current_value)
+
+    if not isinstance(incoming_value, str):
+        incoming_value = str(incoming_value)
 
     # print("MACHINE STATE: ", machine_state, " INCOMING STATE: ", incoming_state, " CURRENT STATE: ", current_state, " INCOMING VAL:", incoming_value, " CURRENT VAL: ", current_value )
     # print(list(map(type, [machine_state, incoming_state, current_state, incoming_value, current_value])))
@@ -62,9 +67,9 @@ def ham_mix(change, graph):
     diff = {}
     for soul, node in change.items():
         for key, val in node.items():
-            if key == "_":
+            if key == METADATA:
                 continue
-            state = get_state_of(node, key)
+            state = get_state_of(node, key) or 0
             graphnode = graph.get(soul, {})
             was = get_state_of(graphnode, key) or 0
             known = graphnode.get(key, 0)
@@ -79,14 +84,14 @@ def ham_mix(change, graph):
             graph[soul] = graph.get(soul, new_node(soul))
             print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
             graph[soul][key], diff[soul][key] = val, val
-            graph[soul]['_']['>'][key], diff[soul]['_']['>'][key] = state, state
+            graph[soul][METADATA][STATE][key], diff[soul][METADATA][STATE][key] = state, state
     return diff
 
 def lex_from_graph(lex, graph):
     """
     Graph or backend..
     """
-    soul = lex['#']
+    soul = lex[SOUL]
     key = lex.get('.', None)
     node = graph.get(soul, None)
     tmp = None
@@ -95,10 +100,10 @@ def lex_from_graph(lex, graph):
         tmp = node.get(key, None)
         if not tmp:
             return 
-        node = {'_': node['_']}
+        node = {METADATA: node[METADATA]}
         node[key] = tmp 
-        tmp = node['_']['>']
-        node['_']['>'][key] = tmp[key]
+        tmp = node[METADATA][STATE]
+        node[METADATA][STATE][key] = tmp[key]
 
     ack = {}
     ack[soul] = node
