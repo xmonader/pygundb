@@ -16,7 +16,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 app = Flask(__name__)
-app.backend = Pickle() # DummyKV()
+app.backend = DummyKV() #Pickle()
 sockets = Sockets(app)
 
 

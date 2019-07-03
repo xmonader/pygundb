@@ -1,0 +1,63 @@
+<html>
+  <body>
+    <h1>Todos</h1>
+
+    <ul></ul>
+
+    <form><input><button>Add</button></form>
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script>
+      var todos = Gun("ws://localhost:8000/gun").get('todos')
+
+      $('form').on('submit', function (event) {
+        var input = $('form').find('input')
+        todos.set({title: input.val()})
+        input.val('')
+        event.preventDefault()
+      })
+
+      todos.map().on(function (todo, id) {
+        var li = $('#' + id)
+        if (!li.get(0)) {
+          li = $('<li>').attr('id', id).appendTo('ul')
+        }
+        if (todo) {
+          var html = '<span onclick="clickTitle(this)">' + todo.title + '</span>'
+          html = '<input type="checkbox" onclick="clickCheck(this)" ' + (todo.done ? 'checked' : '') + '>' + html
+// Insert here first
+          li.html(html)
+// Insert here next
+        }
+      })
+      function clickTitle (element) {
+        element = $(element)
+        if (!element.find('input').get(0)) {
+          element.html('<input value="' + element.html() + '" onkeyup="keypressTitle(this)">')
+        }
+      }
+
+      function keypressTitle (element) {
+        if (event.keyCode === 13) {
+          todos.get($(element).parent().parent().attr('id')).put({title: $(element).val()})
+        }
+      }
+
+      function clickCheck (element) {
+        todos.get($(element).parent().attr('id')).put({done: $(element).prop('checked')})
+      }
+
+// Insert here also
+    </script>
+
+    <style>
+      ul { padding: 0; }
+      li { display: flex; }
+      li span { width: 150px; word-break: break-all; }
+      img { height: 20px; margin-left: 8px; cursor: pointer; }
+      input { width: 150px; margin-right: 8px; }
+      input[type='checkbox'] { width: auto; }
+    </style>
+  </body>
+</html>

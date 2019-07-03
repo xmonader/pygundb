@@ -1,10 +1,19 @@
 # pygun
 minimal `gun.js` implementation in python
 
-## Installation and running
+## Installation
 - clone the repo
 - pip3 install -r requirements.txt
 - execute from the repo `gunicorn -k flask_sockets.worker app:app` and you you can use -b to run on different port otherthan 8000
+
+## Dev install
+- clone the repo
+- `pipenv shell`
+- `pipenv install`
+
+## Running
+Execute `make run`
+
 
 
 ## client
@@ -27,3 +36,19 @@ def cltest():
     loop.run_until_complete(test())
 
 ```
+
+
+### test client
+
+There're multiple targets in the Makefile to use client with different backends
+
+- `make clientdummy`
+- `make clientmem`
+- `make clientredis`
+- `make clientudb`
+- `make clientpickle`
+
+## Examples
+
+### Todo
+There is a basic `todo.html` demo in the repo
