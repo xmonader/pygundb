@@ -11,9 +11,11 @@ minimal `gun.js` implementation in python
 - `pipenv shell`
 - `pipenv install`
 
-## Running
+## Running (flasksockets server)
 Execute `make run`
 
+## Running (Gevent server)
+Execute `make rungevent`
 
 
 ## client
