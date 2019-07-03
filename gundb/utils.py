@@ -8,7 +8,7 @@ def newuid():
 def get_state(node):
     if METADATA in node and STATE in node[METADATA]:
         return node[METADATA][STATE]
-    return {'>':{}}
+    return {STATE:{}}
 
 def get_state_of(node, key):
     s = get_state(node)
@@ -51,16 +51,17 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
     if incoming_state < current_state:
         return {'historical': True}
 
-    if current_state < incoming_state:
+    if incoming_state < current_state:
         return {'converge': True, 'incoming':True}
 
+    # conflict here.
     if incoming_state == current_state:
-        if str(incoming_value) == current_value:
+        if incoming_value == current_value:
             return {'state': True}
-        if str(incoming_value) < str(current_value):
+        if incoming_value < current_value:
             return {'converge': True, 'current':True}
         
-        if str(current_value) < str(incoming_value):
+        if current_value < incoming_value:
             return {'converge': True, 'incoming':True}
 
 
