@@ -34,8 +34,8 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
         current_state = 0
     
 
-    incoming_state = int(incoming_state)
-    current_state = int(current_state)
+    incoming_state = int(float(incoming_state))
+    current_state = int(float(current_state))
 
     if not isinstance(current_value, str):
         current_value = str(current_value)
