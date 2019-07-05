@@ -85,8 +85,8 @@ class GeventGunServer(WebSocketApplication):
                     loggraph(graph)
                     resp = {'put': ack, '@':soul, '#':uid, 'ok':True}
 
-                emit(resp)
-                emit(msg)
+                self.sendall(resp)
+                self.sendall(msg)
 
         self.ws.send(message)
 
@@ -95,7 +95,7 @@ class GeventGunServer(WebSocketApplication):
 
     def sendall(self, resp):
         for client in self.ws.handler.server.clients.values():
-            client.ws.send(resp)
+            client.ws.send(json.dumps(resp))
 
 geventserverapp = WebSocketServer(
     ('', 8000),
