@@ -20,10 +20,10 @@ def new_node(name, **kwargs):
     return node
 
 def ensure_state(node):
-    name = node[METADATA][SOUL]
     if STATE not in node[METADATA]:
-        node[METADATA][STATE] = {k:0 for k in node if k!=SOUL}
+        node[METADATA][STATE] = {k: 0 for k in node if k != SOUL}
     return node
+
 # conflict resolution algorithm 
 def HAM(machine_state, incoming_state, current_state, incoming_value, current_value):
     # TODO: unify the result of the return
@@ -96,21 +96,22 @@ def ham_mix(change, graph):
 
     return diff
 
-def lex_from_graph(lex, graph):
+def lex_from_graph(lex, db):
     """
     Graph or backend..
     """
     soul = lex[SOUL]
-    key = lex.get('.', None)
-    node = graph.get(soul, None)
+    key = lex.get(".", None)
+    node = db.get(soul, None)
     tmp = None
-    if not node: return {}
+    if not node:
+        return {}
     if key:
         tmp = node.get(key, None)
         if not tmp:
-            return 
-        node = {METADATA: node[METADATA]}
-        node[key] = tmp 
+            return
+        node = ensure_state(node)
+        node[key] = tmp
         tmp = node[METADATA][STATE]
         node[METADATA][STATE][key] = tmp[key]
 
