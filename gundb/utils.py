@@ -20,7 +20,6 @@ def new_node(name, **kwargs):
     return node
 
 def ensure_state(node):
-    name = node[METADATA][SOUL]
     if STATE not in node[METADATA]:
         node[METADATA][STATE] = {k: 0 for k in node if k != SOUL}
     return node

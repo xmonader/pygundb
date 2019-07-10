@@ -15,10 +15,7 @@ class cuteobj:
         if attr in dir(self):
             return getattr(self, attr)
         else:
-            if "list/" in attr:
-                setattr(self, attr, [])
-            else:
-                setattr(self, attr, cuteobj())
+            setattr(self, attr, cuteobj())
 
     def __str__(self):
         return "cuteobj: {} ".format(str(self.__dict__))
@@ -62,8 +59,11 @@ class Memory:
             if "#" in val:
                 
                 referenced_name = val["#"]
-                return resolve_v(graph[referenced_name], graph)
-
+                if referenced_name in graph:
+                    ## double check why referenced name might not be in graph??
+                    return resolve_v(graph[referenced_name], graph)
+                else:
+                    return {}
             return {k: resolve_v(v, graph) for k, v in val.items() if k not in ignore}
 
         # def search2(roots, key, graph):
@@ -139,9 +139,8 @@ class Memory:
                 obj.id = obj_id
                 print(":::=> object update setting attr {} with value {}".format(key, resolve_v(value, graph)))
 
-                theattr = getattr(obj, key)
-                if "list/" in key:
-                    thelist = theattr
+                if key.startswith("list/"):
+                    theattr = key[len("list/"):]
                     resolved_list = resolve_v(value, graph)
                     def hash_dict(adict):
                         return str(adict)
@@ -156,7 +155,7 @@ class Memory:
 
                     thelist = unique_items
                     try:
-                        setattr(obj, key.lstrip("list/"), thelist)
+                        setattr(obj, theattr, thelist)
                     except Exception as e:
                         print(e)
                 else:
