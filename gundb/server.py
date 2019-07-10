@@ -16,7 +16,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 app = Flask(__name__)
-app.backend = DummyKV() #Pickle()
+app.backend = Memory() #Pickle()
 sockets = Sockets(app)
 
 
@@ -33,7 +33,7 @@ trackedids = []
 
 def trackid(id_):
     if id_ not in trackedids:
-        print("CREATING NEW ID:::", id_)
+        # print("CREATING NEW ID:::", id_)
         trackedids.append(id_)
     return id_
 
@@ -41,20 +41,21 @@ def trackid(id_):
 def emit(data):
     resp = json.dumps(data)
     for p in peers:
-        print("Sending resp: ", resp, " to ", p)
+        # print("Sending resp: ", resp, " to ", p)
         p.send(resp)
 
 
 def loggraph(graph):
     global app
-    for soul, node in graph.items():
-        print("\nSoul: ", soul)
-        print("\n\t\tNode: ", node)
-        for k, v in node.items():
-            print("\n\t\t{} => {}".format(k, v))
+    pass
+    # for soul, node in graph.items():
+    #     print("\nSoul: ", soul)
+    #     print("\n\t\tNode: ", node)
+    #     for k, v in node.items():
+    #         print("\n\t\t{} => {}".format(k, v))
     
-    print("TRACKED: ", trackedids, " #", len(trackedids))
-    print("\n\nBACKEND: ", app.backend.list())
+    # print("TRACKED: ", trackedids, " #", len(trackedids))
+    # print("\n\nBACKEND: ", app.backend.list())
 
 
 
@@ -83,13 +84,18 @@ def gun(ws):
                         uid = trackid(str(uuid.uuid4()))
                         loggraph(graph)
                         resp = {'@':soul, '#':uid, 'ok':True}
-                        print("DIFF:", diff)
+                        # print("DIFF:", diff)
                         for soul, node in diff.items():
                             for k, v in node.items():
                                 if k == "_":
                                     continue
                                 val = json.dumps(v)
-                                app.backend.put(soul, k, v, diff[soul]['_']['>'][k])
+                                graph[soul][k]=val
+                            for k, v in node.items():
+                                if k == "_":
+                                    continue
+                                val = json.dumps(v)
+                                app.backend.put(soul, k, v, diff[soul]["_"][">"][k], graph)
 
                     elif 'get' in payload:
                         get = payload['get']

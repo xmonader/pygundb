@@ -1,0 +1,85 @@
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/unset.js"></script>
+    <script>
+      var gun = Gun("ws://127.0.0.1:8000/gun")
+
+      let basicTest = () => {
+        gun.get("proj.simple://1").put({
+          "attr1": "val"
+        })
+        gun.get("proj.simple://2").put({
+          "attr2": 5
+        })
+        gun.get("proj.simple://2").put({
+          "attr2": "zc"
+        }) // should fail.
+        /*
+        gun.get("proj.simple://2").get("list/mychars").set("a")
+        gun.get("proj.simple://2").get("list/mychars").set("b")
+        gun.get("proj.simple://2").get("list/mychars").set("c")
+        */
+      }
+
+      let midTest = () => {
+
+        gun.get("proj.person://4").put({
+          name: "ahmed"
+        })
+        gun.get("proj.person://4").put({
+          "name": "ahmed"
+        })
+        gun.get("proj.person://4").get("email").put({
+          "addr": "ahmed@gmail.com",
+        })
+        gun.get("proj.person://5").get("email").put({
+          "addr": "andrew@gmail.com",
+        })
+        gun.get("proj.person://5").get("email").put({
+          "addr": "dmdm@gmail.com",
+        })
+        gun.get("proj.person://5").get("email").put({
+          "addr": "notdmdm@gmail.com",
+        })
+
+      }
+
+
+      let advTest = () => {
+
+        gun.get("proj.human://7").put({
+          "name": "xmon"
+        })
+        gun.get("proj.human://7").get("phone").put({
+          "model": "samsung"
+        })
+        gun.get("proj.human://7").get("phone").get("os").put({
+          "name": "android"
+        })
+
+        gun.get("proj.human://8").put({
+          "name": "richxmon"
+        })
+        gun.get("proj.human://8").get("phone").put({
+          "model": "iphone"
+        })
+        gun.get("proj.human://8").get("phone").get("os").put({
+          "name": "ios"
+        })
+        gun.get("proj.human://8").get("list/favnums").set("white")
+        gun.get("proj.human://8").get("list/favnums").set("red")
+        gun.get("proj.human://8").get("list/favnums").set("blue")
+
+        gun.get("proj.human://2").get("list/langs").set({
+          "name": "python"
+        })
+        gun.get("proj.human://2").get("list/langs").set({
+          "name": "ruby"
+        })
+
+      }
+      basicTest()
+      midTest()
+      advTest()
+      console.log("here now..")
+    </script>
