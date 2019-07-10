@@ -18,7 +18,7 @@ class cuteobj:
             if "list/" in attr:
                 setattr(self, attr, [])
             else:
-                setattr(self, attr, None)
+                setattr(self, attr, cuteobj())
 
     def __str__(self):
         return "cuteobj: {} ".format(str(self.__dict__))
