@@ -10,6 +10,7 @@ def parse_schema_and_id(s):
     if m:
         return m.groupdict()['schema'], int(m.groupdict()['id']) 
     return None, None
+
 class cuteobj:
     def __getattr__(self, attr):
         if attr in dir(self):
@@ -26,6 +27,12 @@ class Memory:
         self.objs = defaultdict(lambda: cuteobj())
 
     def put(self, soul, key, value, state, graph):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except:
+                pass
+
 
         def is_root_soul(s):
             return "://" in s
@@ -48,13 +55,13 @@ class Memory:
         def resolve_v(val, graph):
             # UGLY FIND ANOTHER TO FIX.
             if not isinstance(val, dict):
-                try:
-                    newv = ast.literal_eval(val)
-                    if isinstance(newv, dict):
-                        return resolve_v(newv, graph)
-                    else:
-                        return val
-                except:
+                # try:
+                #     newv = ast.literal_eval(val)
+                #     if isinstance(newv, dict):
+                #         return resolve_v(newv, graph)
+                #     else:
+                #         return val
+                # except:
                     return val # str
             if "#" in val:
                 
@@ -139,8 +146,8 @@ class Memory:
                 obj.id = obj_id
                 print(":::=> object update setting attr {} with value {}".format(key, resolve_v(value, graph)))
 
-                if key.startswith("list/"):
-                    theattr = key[len("list/"):]
+                if key.startswith("list_"):
+                    theattr = key
                     resolved_list = resolve_v(value, graph)
                     def hash_dict(adict):
                         return str(adict)
@@ -206,8 +213,8 @@ class Memory:
                     attr = objpath.pop(0)
                     try:
                         obj = getattr(obj, attr)
-                    except Exception as e:
-                        print("err: ", e)
+                    except:
+                        return
                 obj = objdata
                 self.objs[obj.id] = obj
                 print("success.....!!!!!", obj)
@@ -217,10 +224,6 @@ class Memory:
 
         graph[soul][key] = value
         # print(graph)
-
-
-
-
 
         # soul -> {field:{'state':state, 'val':val, rel: relation}}
         if soul not in self.db:
