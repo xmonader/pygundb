@@ -16,7 +16,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 app = Flask(__name__)
-app.backend = Memory() #Pickle()
+app.backend =   Memory() #Pickle()
 sockets = Sockets(app)
 
 
@@ -63,12 +63,10 @@ def loggraph(graph):
 def gun(ws):
 
     global peers, graph
-    # print("Got connection: ", ws)
     peers.append(ws)
     try:
         while not ws.closed:
             msgstr = ws.receive() 
-            # print("MSG :", msgstr)
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
@@ -89,12 +87,12 @@ def gun(ws):
                             for k, v in node.items():
                                 if k == "_":
                                     continue
-                                val = json.dumps(v)
-                                graph[soul][k]=val
+                                # val = json.dumps(v)
+                                graph[soul][k]=v
                             for k, v in node.items():
                                 if k == "_":
                                     continue
-                                val = json.dumps(v)
+                                # val = json.dumps(v)
                                 app.backend.put(soul, k, v, diff[soul]["_"][">"][k], graph)
 
                     elif 'get' in payload:
@@ -110,7 +108,6 @@ def gun(ws):
     except Exception as e:
         print("ERR:" ,e)
         traceback.print_exc(file=sys.stdout)
-    # print("Connection closed for ws: ", ws)
     peers.remove(ws)
     print("Peers now are: ", peers)
 
