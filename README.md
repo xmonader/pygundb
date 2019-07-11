@@ -54,3 +54,8 @@ There're multiple targets in the Makefile to use client with different backends
 
 ### Todo
 There is a basic `todo.html` demo in the repo
+
+
+# Backends
+
+for now `GUNDB=mem make run` or `GUNDB=mongo make run` (assuming mongoinstance to be running on 27017)
