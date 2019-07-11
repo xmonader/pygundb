@@ -16,10 +16,20 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 app = Flask(__name__)
-app.backend =   Memory() #Pickle()
+backend_db = os.getenv("GUNDB", "mem")
+print("backenddb var: ", backend_db)
+if backend_db == "mem":
+    print("mem backend")
+    app.backend =  Memory() #Pickle()
+elif backend_db == "mongo":
+    print("mongo backend")
+    app.backend = Mongo()
+elif backend_db == "pickle":
+    print("pickle backend")
+    app.backend = Pickle()
+elif backend_db == "redis":
+    app.backend = RedisKV()
 sockets = Sockets(app)
-
-
 
 print("APP: ", app)
 

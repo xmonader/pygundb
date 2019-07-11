@@ -12,7 +12,7 @@ class cuteobj:
         return "cuteobj: {} ".format(str(self.__dict__))
 
 class Mongo(BackendMixin):
-    def __init__(self, connstring='mongodb://localhost:36000'):
+    def __init__(self, connstring='mongodb://localhost:27017'):
         from pymongo import MongoClient
         self.cl = MongoClient(connstring)
         self.mongodb = self.cl.test_database
