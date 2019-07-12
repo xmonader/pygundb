@@ -1,42 +1,49 @@
+from collections import defaultdict
+from .backend import BackendMixin
 import json
-from ..consts import STATE, METADATA, SOUL
 
-class DummyKV:
+
+def format_object_id(schema, id):
+    return "{}://{}".format(schema, id)
+
+class FakeKV:
     def __init__(self):
-        self.db = {}
+        self._database = {}
 
-    def put(self, soul, key, value, state):
-        print("SETTING SOUL KEY VAL STATE TO :", soul, key, value, state, type(state))
-        self.db["{soul}:{key}:{state}".format(**locals())] = value
+    def set(self, key, obj):
+        self._database[key] = obj
+    
+    def exists(self, key):
+        return key in self._database
 
-    def get(self, soul, key=None):
-        print("\n\n{} {} {}\n\n".format(soul, key, type(key)))
-        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
-        if isinstance(key, str):
-            keys = [k for k in self.db.keys() if k and k.startswith(soul+":"+key)]
-        else: 
-            keys = [k for k in self.db.keys() if k.startswith(soul+":")]
+    def get(self, key, default):
+        try:
+            return self._database[key]
+        except:
+            return default
 
-        for k in keys:
-            sol, key, state = k.split(":")
-            ret[METADATA][STATE][key] = state 
-            ret[key] = self.db[k]
+class DummyKV(BackendMixin):
+    def __init__(self):
+        self.db = defaultdict(lambda: defaultdict(lambda: defaultdict()))
+        self.kv = FakeKV()
 
-        return ret
+    def get_object_by_id(self, obj_id, schema=None):
+        full_id = format_object_id(schema, obj_id)
+        return self.kv.get(full_id, {'id':obj_id})
 
-    def putsoul(self, soul, souldict):
-        for k,v in souldict.items():
-            if k in "#_>":
-                continue
-            kstate = souldict.get(STATE, {}).get(STATE, {k:0})[k]
-            self.put(soul, k, v, kstate)
+    def set_object_attr(self, obj, attr, val):
+        obj[attr] = val
+        return obj
+
+    def save_object(self, obj, obj_id, schema=None):
+        full_id = format_object_id(schema, obj_id)
+        self.kv.set(full_id, json.dumps(obj))
+
+    def __setitem__(self, k, v):
+        self.db[k] = v
+
+    def __getitem__(self, k):
+        return self.db[k]
 
     def list(self):
         return self.db.items()
-
-    def __getitem__(self, soul):
-        return self.get(soul, None)
-
-    def __setitem__(self, soul, souldict):
-        self.putsoul(soul, souldict)
-

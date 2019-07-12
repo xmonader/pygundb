@@ -1,53 +1,38 @@
-from pickle import load, dump
+from collections import defaultdict
+from .backend import BackendMixin
+from pickle import loads, dumps
 import os
-import traceback
-from ..consts import METADATA, STATE, SOUL
 
-class Pickle:
-    def __init__(self):
-        self.db = {}
-        self.dbpath = "/tmp/gun.data"
-        self.load()
+def format_object_id(schema, id):
+    return "{}://{}".format(schema, id)
 
-    
-    def put(self, soul, key, value, state):
-        # soul -> {field:{'state':state, 'val':val, rel: relation}}
-        if soul not in self.db:
-            self.db[soul] = {METADATA:{}}
-        self.db[soul][key] = value
-        self.db[soul][METADATA][key] = state
-        
-        with open(self.dbpath, "wb") as f:
-            try:
-                dump(self.db,  f)
-            except Exception as e:
-                traceback.format_exc()
-
-    def load(self):
-        default = {}
-        if not os.path.exists(self.dbpath):
-            self.db = {}
+class Pickle(BackendMixin):
+    def __init__(self, pickledbpath="/tmp/gundb.dat"):
+        self.db = defaultdict(lambda: defaultdict(lambda: defaultdict()))
+        self.pickledbpath = pickledbpath
+        self.pickledb = None
+        if os.path.exists(self.pickledbpath ):
+            with open(self.pickledbpath , "rb") as f:
+                self.pickledb = loads(f.read())
         else:
-            with open(self.dbpath, "rb") as f:
-                try:
-                    self.db = load(f)
-                except Exception as e:
-                    print("[-] Error")
-    
+            self.pickledb = {}
 
-    def get(self, soul, key=None):
-        # print("SOUL: ", soul, " KEY : ", key)
-        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
-        res = None
-        if soul in self.db:
-            if key and isinstance(key, str):
-                res = {**ret, **self.db.get(soul)}
-                return res.get(key, {})
-            else:
-                res = {**ret, **self.db.get(soul)}
-                return res
+    def savedb(self):
+        with open(self.pickledbpath, "wb") as f:
+            f.write(dumps(self.pickledb))
 
-        return ret 
+    def get_object_by_id(self, obj_id, schema=None):
+        full_id = format_object_id(schema, obj_id)
+        return self.pickledb.get(full_id, {'id':obj_id})
+
+    def set_object_attr(self, obj, attr, val):
+        obj[attr] = val
+        return obj
+
+    def save_object(self, obj, obj_id, schema=None):
+        full_id = format_object_id(schema, obj_id)
+        self.pickledb[full_id] = obj
+        self.savedb()
 
     def __setitem__(self, k, v):
         self.db[k] = v

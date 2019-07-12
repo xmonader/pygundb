@@ -58,4 +58,11 @@ There is a basic `todo.html` demo in the repo
 
 # Backends
 
-for now `GUNDB=mem make run` or `GUNDB=mongo make run` (assuming mongoinstance to be running on 27017)
+currently we support
+- redis
+- mongo
+- pickle db
+- dummy kv
+- dbm
+
+Export GUNDB variable to one of `mem`, `redis`, `mongo`, `pickle`, `dummy`, `dbm` and invoke `make run`

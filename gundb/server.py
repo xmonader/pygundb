@@ -29,6 +29,13 @@ elif backend_db == "pickle":
     app.backend = Pickle()
 elif backend_db == "redis":
     app.backend = RedisKV()
+elif backend_db == "dummy":
+    app.backend = DummyKV()
+elif backend_db == "pickle":
+    app.backend = Pickle()
+elif backend_db == "udb":
+    app.backend = UDB()
+
 sockets = Sockets(app)
 
 print("APP: ", app)
