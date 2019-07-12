@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+ipdb = "*"
+
+[packages]
+redis = "==2.10.6"
+Flask = "==0.12.2"
+Flask-Sockets = "==0.2.1"
+websockets = "*"
+
+[requires]
+python_version = "3.6"

@@ -1,24 +1,28 @@
 import time
 import uuid
+from .consts import STATE, METADATA, SOUL
 
 def newuid():
     return str(uuid.uuid4())
 
 def get_state(node):
-    if "_" in node:
-        return node['_']['>']
-    return {}
+    if METADATA in node and STATE in node[METADATA]:
+        return node[METADATA][STATE]
+    return {STATE:{}}
 
 def get_state_of(node, key):
     s = get_state(node)
-    return s.get(key, None) #FIXME: should be 0?
+    return s.get(key, 0) #FIXME: should be 0?
 
 def new_node(name, **kwargs):
     # node with meta
-    node = {'_': {'#':name, '>':{k:0 for k in kwargs}}, **kwargs}
-    print("NODE IS :" , node)
+    node = {METADATA: {SOUL:name, STATE:{k:0 for k in kwargs}}, **kwargs}
     return node
 
+def ensure_state(node):
+    if STATE not in node[METADATA]:
+        node[METADATA][STATE] = {k: 0 for k in node if k != SOUL}
+    return node
 
 # conflict resolution algorithm 
 def HAM(machine_state, incoming_state, current_state, incoming_value, current_value):
@@ -29,11 +33,15 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
     if current_state in ["None", None]:
         current_state = 0
     
-    incoming_state = int(incoming_state)
-    current_state = int(current_state)
-    current_value = current_value or str(current_value)
-    incoming_value = incoming_value or str(incoming_value)
 
+    incoming_state = int(float(incoming_state))
+    current_state = int(float(current_state))
+
+    if not isinstance(current_value, str):
+        current_value = str(current_value)
+
+    if not isinstance(incoming_value, str):
+        incoming_value = str(incoming_value)
 
     # print("MACHINE STATE: ", machine_state, " INCOMING STATE: ", incoming_state, " CURRENT STATE: ", current_state, " INCOMING VAL:", incoming_value, " CURRENT VAL: ", current_value )
     # print(list(map(type, [machine_state, incoming_state, current_state, incoming_value, current_value])))
@@ -43,16 +51,17 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
     if incoming_state < current_state:
         return {'historical': True}
 
-    if current_state < incoming_state:
+    if incoming_state < current_state:
         return {'converge': True, 'incoming':True}
 
+    # conflict here.
     if incoming_state == current_state:
-        if str(incoming_value) == current_value:
+        if incoming_value == current_value:
             return {'state': True}
-        if str(incoming_value) < str(current_value):
+        if incoming_value < current_value:
             return {'converge': True, 'current':True}
         
-        if str(current_value) < str(incoming_value):
+        if current_value < incoming_value:
             return {'converge': True, 'incoming':True}
 
 
@@ -62,9 +71,9 @@ def ham_mix(change, graph):
     diff = {}
     for soul, node in change.items():
         for key, val in node.items():
-            if key == "_":
+            if key in [METADATA, SOUL,STATE]:
                 continue
-            state = get_state_of(node, key)
+            state = get_state_of(node, key) or 0
             graphnode = graph.get(soul, {})
             was = get_state_of(graphnode, key) or 0
             known = graphnode.get(key, 0)
@@ -79,26 +88,32 @@ def ham_mix(change, graph):
             graph[soul] = graph.get(soul, new_node(soul))
             print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
             graph[soul][key], diff[soul][key] = val, val
-            graph[soul]['_']['>'][key], diff[soul]['_']['>'][key] = state, state
+            graph[soul] = ensure_state(graph[soul])
+            diff[soul] = ensure_state(diff[soul])
+
+            graph[soul][METADATA][STATE][key] = state
+            diff[soul][METADATA][STATE][key] = state
+
     return diff
 
-def lex_from_graph(lex, graph):
+def lex_from_graph(lex, db):
     """
     Graph or backend..
     """
-    soul = lex['#']
-    key = lex.get('.', None)
-    node = graph.get(soul, None)
+    soul = lex[SOUL]
+    key = lex.get(".", None)
+    node = db.get(soul, None)
     tmp = None
-    if not node: return {}
+    if not node:
+        return {}
     if key:
         tmp = node.get(key, None)
         if not tmp:
-            return 
-        node = {'_': node['_']}
-        node[key] = tmp 
-        tmp = node['_']['>']
-        node['_']['>'][key] = tmp[key]
+            return
+        node = ensure_state(node)
+        node[key] = tmp
+        tmp = node[METADATA][STATE]
+        node[METADATA][STATE][key] = tmp[key]
 
     ack = {}
     ack[soul] = node

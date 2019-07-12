@@ -3,10 +3,11 @@ import asyncio
 import websockets
 from .utils import newuid, new_node, ham_mix
 from .backends import *
+from .consts import METADATA, SOUL, STATE
 
 def format_put_request(soul, **kwargs):
     ch = {
-        '#': newuid(),
+        SOUL: newuid(),
         'put': {
             soul: new_node(soul, **kwargs)
         } 
@@ -15,9 +16,9 @@ def format_put_request(soul, **kwargs):
 
 def format_get_request(soul):
     ch = {
-        '#': newuid(),
+        SOUL: newuid(),
         'get': {
-            '#': soul
+            SOUL: soul
         } 
     }
     return ch 
@@ -50,18 +51,24 @@ class GunClient:
             # print("RESP: {} ".format(resp))
             change = loaded['put']
             # print("CHANGE IS: ", change)
-            soul = loaded['#']
+            soul = loaded[SOUL]
             diff = ham_mix(change, self.backend)
 
-            resp = {'@':soul, '#':newuid(), 'ok':True}
+            resp = {'@':soul, SOUL:newuid(), 'ok':True}
             # print("DIFF:", diff)
 
             for soul, node in diff.items():
                 for k, v in node.items():
-                    if k == "_":
+                    if k == METADATA:
                         continue
-                    kstate = diff[soul]['_']['>'][k]
-                    print("KSTATE: ", kstate)
+                    kstate = 0
+                    try:
+                        kstate = diff[soul][METADATA][STATE][k]
+                    except KeyError: 
+                        pass 
+                    else:
+                        print("KSTATE: ", kstate)
                     self.backend.put(soul, k, v, kstate)
             return self.backend.get(soul, key)
+
 

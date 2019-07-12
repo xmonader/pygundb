@@ -16,10 +16,27 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 app = Flask(__name__)
-app.backend = Pickle() # DummyKV()
+backend_db = os.getenv("GUNDB", "mem")
+print("backenddb var: ", backend_db)
+if backend_db == "mem":
+    print("mem backend")
+    app.backend =  Memory() #Pickle()
+elif backend_db == "mongo":
+    print("mongo backend")
+    app.backend = Mongo()
+elif backend_db == "pickle":
+    print("pickle backend")
+    app.backend = Pickle()
+elif backend_db == "redis":
+    app.backend = RedisKV()
+elif backend_db == "dummy":
+    app.backend = DummyKV()
+elif backend_db == "pickle":
+    app.backend = Pickle()
+elif backend_db == "udb":
+    app.backend = UDB()
+
 sockets = Sockets(app)
-
-
 
 print("APP: ", app)
 
@@ -33,7 +50,7 @@ trackedids = []
 
 def trackid(id_):
     if id_ not in trackedids:
-        print("CREATING NEW ID:::", id_)
+        # print("CREATING NEW ID:::", id_)
         trackedids.append(id_)
     return id_
 
@@ -41,20 +58,21 @@ def trackid(id_):
 def emit(data):
     resp = json.dumps(data)
     for p in peers:
-        print("Sending resp: ", resp, " to ", p)
+        # print("Sending resp: ", resp, " to ", p)
         p.send(resp)
 
 
 def loggraph(graph):
     global app
-    for soul, node in graph.items():
-        print("\nSoul: ", soul)
-        print("\n\t\tNode: ", node)
-        for k, v in node.items():
-            print("\n\t\t{} => {}".format(k, v))
+    pass
+    # for soul, node in graph.items():
+    #     print("\nSoul: ", soul)
+    #     print("\n\t\tNode: ", node)
+    #     for k, v in node.items():
+    #         print("\n\t\t{} => {}".format(k, v))
     
-    print("TRACKED: ", trackedids, " #", len(trackedids))
-    print("\n\nBACKEND: ", app.backend.list())
+    # print("TRACKED: ", trackedids, " #", len(trackedids))
+    # print("\n\nBACKEND: ", app.backend.list())
 
 
 
@@ -62,12 +80,10 @@ def loggraph(graph):
 def gun(ws):
 
     global peers, graph
-    # print("Got connection: ", ws)
     peers.append(ws)
     try:
         while not ws.closed:
             msgstr = ws.receive() 
-            # print("MSG :", msgstr)
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
@@ -83,13 +99,18 @@ def gun(ws):
                         uid = trackid(str(uuid.uuid4()))
                         loggraph(graph)
                         resp = {'@':soul, '#':uid, 'ok':True}
-                        print("DIFF:", diff)
+                        # print("DIFF:", diff)
                         for soul, node in diff.items():
                             for k, v in node.items():
                                 if k == "_":
                                     continue
-                                val = json.dumps(v)
-                                app.backend.put(soul, k, v, diff[soul]['_']['>'][k])
+                                # val = json.dumps(v)
+                                graph[soul][k]=v
+                            for k, v in node.items():
+                                if k == "_":
+                                    continue
+                                # val = json.dumps(v)
+                                app.backend.put(soul, k, v, diff[soul]["_"][">"][k], graph)
 
                     elif 'get' in payload:
                         get = payload['get']
@@ -104,7 +125,6 @@ def gun(ws):
     except Exception as e:
         print("ERR:" ,e)
         traceback.print_exc(file=sys.stdout)
-    # print("Connection closed for ws: ", ws)
     peers.remove(ws)
     print("Peers now are: ", peers)
 
