@@ -19,9 +19,6 @@ class Memory(BackendMixin):
     def get_object_by_id(self, obj_id, schema=None):
         return self.objs.get(obj_id, {})
 
-    def set_object(self, obj_id, obj, schema=None):
-        self.objs[obj_id] = obj
-
     def set_object_attr(self, obj, attr, val):
         obj[attr] = val
         return obj
