@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script>
-      var todos = Gun("ws://localhost:8000/gun").get('todos')
+      var todos = Gun("ws://localhost:8000/gun").get('todos://1').get("list_todos")
 
       $('form').on('submit', function (event) {
         var input = $('form').find('input')
