@@ -86,7 +86,7 @@ def ham_mix(change, graph):
                 diff[soul] = new_node(soul)
 
             graph[soul] = graph.get(soul, new_node(soul))
-            print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
+            # print("GRAPH[SOUL]: ", graph[soul], graph, type(graph), type(graph[soul]))
             graph[soul][key], diff[soul][key] = val, val
             graph[soul] = ensure_state(graph[soul])
             diff[soul] = ensure_state(diff[soul])

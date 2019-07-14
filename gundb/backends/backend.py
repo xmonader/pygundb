@@ -13,6 +13,11 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
+        if soul not in self.db:
+            self.db[soul] = {METADATA:{STATE:{}}}
+        self.db[soul][key] = value
+        self.db[soul][METADATA][STATE][key] = state
+
         if isinstance(value, str):
             try:
                 value = json.loads(value)
@@ -28,7 +33,7 @@ class BackendMixin:
                 schema, obj_id = parse_schema_and_id(soul)
                 obj = self.get_object_by_id(obj_id, schema)
                 obj = self.set_object_attr(obj, 'id', obj_id)
-                print("object update setting attr {} with value {}".format(key, resolve_v(value, graph)))
+                # print("object update setting attr {} with value {}".format(key, resolve_v(value, graph)))
 
                 if key.startswith("list_"):
                     theattr = key
@@ -51,8 +56,8 @@ class BackendMixin:
                         print(e)
                 else:
                     obj = self.set_object_attr(obj, key, resolve_v(value, graph))
-                print("saved!!!")
-                print(obj)
+                # print("saved!!!")
+                # print(obj)
                 self.save_object(obj, obj_id, schema)
                 return obj
             else:
@@ -101,25 +106,24 @@ class BackendMixin:
                         return
                 obj = objdata
                 self.save_object(obj, schema)
-                print("success.....!!!!!", obj)
+                # print("success.....!!!!!", obj)
 
         do(soul, key, value, graph)
         graph[soul][key] = value
 
-        if soul not in self.db:
-            self.db[soul] = {METADATA:{}}
-        self.db[soul][key] = value
-        self.db[soul][METADATA][key] = state
-
 
     def get(self, soul, key=None):
         ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
+
         res = None
         if soul in self.db:
+            ret[METADATA] = self.db[soul][METADATA]
             if key and isinstance(key, str):
                 res = {**ret, **self.db.get(soul)}
+                print("returning first {}".format(res))
                 return res.get(key, {})
             else:
                 res = {**ret, **self.db.get(soul)}
+                print("returning second {}".format(res))
                 return res
         return ret 
