@@ -57,6 +57,7 @@ def trackid(id_):
 
 def emit(data):
     resp = json.dumps(data)
+    # print("emitting :",  data)
     for p in peers:
         # print("Sending resp: ", resp, " to ", p)
         p.send(resp)
@@ -87,40 +88,44 @@ def gun(ws):
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
+                print("\n\n\n received {} \n\n\n".format(msg))
                 if not isinstance(msg, list):
                     msg = [msg]
+                # import ipdb; ipdb.set_trace()
                 for payload in msg:
+                    # print("payload: {}\n\n".format(payload))
                     if isinstance(payload, str):
                         payload = json.loads(payload)
                     if 'put' in payload:
                         change = payload['put']
-                        soul = payload['#']
+                        msgid = payload['#']
                         diff = ham_mix(change, graph)
                         uid = trackid(str(uuid.uuid4()))
                         loggraph(graph)
-                        resp = {'@':soul, '#':uid, 'ok':True}
+                        # make sure to send error too in case of failed ham_mix
+
+                        resp = {'@':msgid, '#':uid, 'ok':True}
                         # print("DIFF:", diff)
                         for soul, node in diff.items():
                             for k, v in node.items():
-                                if k == "_":
+                                if k == METADATA:
                                     continue
-                                # val = json.dumps(v)
                                 graph[soul][k]=v
                             for k, v in node.items():
-                                if k == "_":
+                                if k == METADATA:
                                     continue
-                                # val = json.dumps(v)
-                                app.backend.put(soul, k, v, diff[soul]["_"][">"][k], graph)
+                                app.backend.put(soul, k, v, diff[soul][METADATA][STATE][k], graph)
 
                     elif 'get' in payload:
-                        get = payload['get']
-                        soul = get['#']
-                        ack = lex_from_graph(get, app.backend)
                         uid = trackid(str(uuid.uuid4()))
+                        get = payload['get']
+                        msgid = payload['#']
+                        ack = lex_from_graph(get, app.backend)
                         loggraph(graph)
-                        resp = {'put': ack, '@':soul, '#':uid, 'ok':True}
+                        resp = {'put': ack, '@':msgid, '#':uid, 'ok':True}
 
                 emit(resp)
+                print("\n\n sending resp {}\n\n".format(resp))
                 emit(msg)
     except Exception as e:
         print("ERR:" ,e)
