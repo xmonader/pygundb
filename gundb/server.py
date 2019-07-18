@@ -88,7 +88,7 @@ def gun(ws):
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
-                print("\n\n\n received {} \n\n\n".format(msg))
+                #print("\n\n\n received {} \n\n\n".format(msg))
                 if not isinstance(msg, list):
                     msg = [msg]
                 # import ipdb; ipdb.set_trace()
@@ -125,7 +125,7 @@ def gun(ws):
                         resp = {'put': ack, '@':msgid, '#':uid, 'ok':True}
 
                 emit(resp)
-                print("\n\n sending resp {}\n\n".format(resp))
+                #print("\n\n sending resp {}\n\n".format(resp))
                 emit(msg)
     except Exception as e:
         print("ERR:" ,e)
