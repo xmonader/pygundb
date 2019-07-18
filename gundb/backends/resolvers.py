@@ -24,53 +24,36 @@ def filter_root_objects(graph):
 
 ignore = ["_", ">", "#"]
 
+def is_reference(d):
+    return isinstance(d, dict) and '#' in d
+
+def resolve_reference(ref, graph):
+    assert(is_reference(ref))
+    if not ref['#'] in graph:
+        return {}
+    resolved = graph[ref['#']].copy()
+    for k, v in resolved.items():
+        if not k in ignore and is_reference(v):
+            resolved[k] = resolve_reference(v, graph)
+    return resolved
+
 def resolve_v(val, graph):
-    # UGLY FIND ANOTHER TO FIX.
-    if not isinstance(val, dict):
-        return val # str
-    if "#" in val:
-        referenced_name = val["#"]
-        if referenced_name in graph:
-            ## double check why referenced name might not be in graph??
-            return resolve_v(graph[referenced_name], graph)
-        else:
-            return {}
-    return {k: resolve_v(v, graph) for k, v in val.items() if k not in ignore}
+    if is_reference(val):
+        return resolve_reference(val, graph)
+    else:
+        return val
 
 def search(k, graph, rootobjects):
-    # DON'T CHANGE: CHECK WITH ME OR ANDREW
     roots = list(rootobjects)
-    def inner(k, current_key, current_node, graph, path=None):
-        # print("path in inner: ", path)
-    
-        if not isinstance(current_node, dict):
-            return []   
-        if not path:
-            path = []
-    
-        if current_key:
-            path.append(current_key)
-
-        for key, node in current_node.items():
-            
-            # print("node: {} ".format(node))
-            # print("key {}".format(key))
-            if key in ">_":
+    def dfs(graph):
+        for key, val in graph.items():
+            if key in ignore or not isinstance(val, dict):
                 continue
-
-            if isinstance(node, dict) and node.get("#") == k:
-                path.append(key)
-                return path
-            
-            res = inner(k, key, node, graph, path)
-            if res:
-                return res
+            if val.get('#') == k:
+                return [key]
             else:
-                pass
-                # print("path now : ", path)
-                
-        if current_key:
-            path.pop()
+                try_child = dfs(val)
+                if try_child:
+                    return [key] + try_child
         return []
-        
-    return inner(k, None, graph, roots, None)
+    return dfs(graph)
