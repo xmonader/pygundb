@@ -44,7 +44,6 @@ def resolve_v(val, graph):
         return val
 
 def search(k, graph, rootobjects):
-    roots = list(rootobjects)
     def dfs(graph):
         for key, val in graph.items():
             if key in ignore or not isinstance(val, dict):
