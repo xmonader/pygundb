@@ -43,7 +43,9 @@ def resolve_v(val, graph):
     else:
         return val
 
-def search(k, graph, rootobjects):
+def copy(root, graph):
+    return {k: resolve_v(v, graph) for k, v in graph.items() if k not in ignore}
+def search(k, graph):
     def dfs(graph):
         for key, val in graph.items():
             if key in ignore or not isinstance(val, dict):
@@ -56,3 +58,16 @@ def search(k, graph, rootobjects):
                     return [key] + try_child
         return []
     return dfs(graph)
+
+def traverse(soul, graph):
+    for key in graph.keys():
+        val = graph[key]
+        if type(val) != dict:
+            continue
+        if '#' in val and val['#'] == soul:
+            return key, graph, key
+        else:
+            try_child = traverse(soul, val)
+            if try_child[0]:
+                return key, try_child[1], try_child[2]
+    return None, None, None
