@@ -8,7 +8,7 @@ ipdb = "*"
 
 [packages]
 redis = "==2.10.6"
-Flask = "==0.12.2"
+Flask = "==1.0"
 Flask-Sockets = "==0.2.1"
 websockets = "*"
 
