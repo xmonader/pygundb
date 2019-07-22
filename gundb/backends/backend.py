@@ -49,7 +49,6 @@ class BackendMixin:
                 return 0
             root = path[0]
             path = path[1:] + [key]
-
         value = resolve_v(value, graph)
         if key.startswith('list_'):
             value = uniquify(value.values())
@@ -57,7 +56,7 @@ class BackendMixin:
         schema, index = parse_schema_and_id(root)
         root_object = self.get_object_by_id(index, schema)
         current = root_object
-        for e in path[1:-1]:
+        for e in path[0:-1]:
             try:
                 current = getattr(current, e)
             except:# The path doesn't exist in the db
