@@ -2,7 +2,8 @@ import json
 import copy
 from ..consts import *
 from .resolvers import *
-from datetime import datetime
+import logging
+
 def uniquify(lst):
     #lst might be a list of objects
     res = []
@@ -22,6 +23,7 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
+        logging.debug("\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n\n".format(soul, key, value))
         if soul not in self.db:
             self.db[soul] = {METADATA:{STATE:{}}}
         self.db[soul][key] = value
@@ -34,12 +36,16 @@ class BackendMixin:
                 pass 
 
         if is_root_soul(soul): # root object
+            logging.debug("Direct property of a root object.")
             root = soul
             path = [key]
         else: 
+            logging.debug("Nested soul that must be looked for.")
             path = search(soul, graph)
             if not path: # Didn't find the soul referenced in any root object
                 # Ignore the request
+                logging.debug("Couldn't find soul :(")
+                logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
             root = path[0]
             path = path[1:] + [key]
@@ -56,7 +62,10 @@ class BackendMixin:
                 current = getattr(current, e)
             except:# The path doesn't exist in the db
                 # Ignore the request
+                logging.debug("Couldn't traverse the database for the found path.")
+                logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
+        logging.debug("Updated successfully!")
         current[path[-1]] = value
         self.save_object(root_object, index, schema)
 

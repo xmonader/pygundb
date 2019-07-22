@@ -10,7 +10,7 @@ import time
 import uuid
 import sys
 import traceback
-
+import logging
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -79,7 +79,7 @@ def loggraph(graph):
 
 @sockets.route('/gun')
 def gun(ws):
-
+    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     global peers, graph
     peers.append(ws)
     try:
