@@ -49,7 +49,6 @@ def copy(root, graph):
 
 def search(k, graph):
     def dfs(obj):
-        print(obj)
         for key, val in obj.items():
             if key in ignore or not isinstance(val, dict):
                 continue
@@ -65,7 +64,6 @@ def search(k, graph):
         return []
     for key, val in graph.items():
         if is_root_soul(key):
-            print(val)
             try_child = dfs(val)
             if try_child:
                 return [key] + try_child
