@@ -2,10 +2,20 @@ import json
 import copy
 from ..consts import *
 from .resolvers import *
+from datetime import datetime
+"""
 def write(data):
-    fd = open('out.txt')
+    fd = open('out.txt', 'a')
+    fd.write(data)
+    fd.close()
+"""
 def uniquify(lst):
-    return lst
+    """lst might be a list of objects"""
+    res = []
+    for r in lst:
+        if r not in res:
+            res.append(r)
+    return res
 
 class BackendMixin:
     def get_object_by_id(self, obj_id, schema=None):
@@ -18,6 +28,7 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
+        #write('soul: {}\n graph: {}\n\n'.format(soul, json.dumps(graph, indent = 4)))
         if soul not in self.db:
             self.db[soul] = {METADATA:{STATE:{}}}
         self.db[soul][key] = value
@@ -35,7 +46,8 @@ class BackendMixin:
         else: 
             path = search(soul, graph)
             if not path:
-                print("soul: {} Not found\n\n".format(soul))
+                #raise Exception("soul: {} Not found\n\n".format(soul))
+                print("now:{}, soul: {} Not found\n\n".format(datetime.now(), soul))
                 return 0
             root = path[0]
             path = path[1:] + [key]
