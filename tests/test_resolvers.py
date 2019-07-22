@@ -3,7 +3,7 @@ from gundb.backends.resolvers import *
 @pytest.fixture
 def resolved_graph():
     return {
-            'author://':{
+            'author://1':{
                 'book': "SICP",
                 'food': {
                     'sauce': 'white',
@@ -92,7 +92,7 @@ def resolved_graph():
 @pytest.fixture
 def graph():
     return {
-            'author://':{
+            'author://1':{
 
                 '_':{
                     '#': 'soul1'
@@ -180,6 +180,6 @@ def test_resolve_v_copy_not_ref(graph, resolved_graph):
     assert resolve_v({'#': 'cairo'}, graph) == resolved_graph['cairo']
 
 def test_search(graph):
-    assert search('temp', graph) == ['author://', 'location', 'temprature']
-    assert search('AlfMaskan', graph) == ['author://', 'location', 'list_landmarks', 'random_key1']
-    assert search('pasta', graph) == ['author://', 'food']
+    assert search('temp', graph) == ['author://1', 'location', 'temprature']
+    assert search('AlfMaskan', graph) == ['author://1', 'location', 'list_landmarks', 'random_key1']
+    assert search('pasta', graph) == ['author://1', 'food']
