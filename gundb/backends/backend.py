@@ -3,14 +3,8 @@ import copy
 from ..consts import *
 from .resolvers import *
 from datetime import datetime
-"""
-def write(data):
-    fd = open('out.txt', 'a')
-    fd.write(data)
-    fd.close()
-"""
 def uniquify(lst):
-    """lst might be a list of objects"""
+    #lst might be a list of objects
     res = []
     for r in lst:
         if r not in res:
@@ -28,7 +22,6 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
-        #write('soul: {}\n graph: {}\n\n'.format(soul, json.dumps(graph, indent = 4)))
         if soul not in self.db:
             self.db[soul] = {METADATA:{STATE:{}}}
         self.db[soul][key] = value
@@ -45,9 +38,8 @@ class BackendMixin:
             path = [key]
         else: 
             path = search(soul, graph)
-            if not path:
-                #raise Exception("soul: {} Not found\n\n".format(soul))
-                print("now:{}, soul: {} Not found\n\n".format(datetime.now(), soul))
+            if not path: # Didn't find the soul referenced in any root object
+                # Ignore the request
                 return 0
             root = path[0]
             path = path[1:] + [key]
@@ -60,8 +52,11 @@ class BackendMixin:
         root_object = self.get_object_by_id(index, schema)
         current = root_object
         for e in path[1:-1]:
-            current = getattr(current, e)
-        
+            try:
+                current = getattr(current, e)
+            except:# The path doesn't exist in the db
+                # Ignore the request
+                return 0
         current[path[-1]] = value
         self.save_object(root_object, index, schema)
 
