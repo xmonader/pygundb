@@ -48,15 +48,25 @@ def copy(root, graph):
     return {k: resolve_v(v, graph) for k, v in graph.items() if k not in ignore}
 
 def search(k, graph):
-    def dfs(graph):
-        for key, val in graph.items():
+    def dfs(obj):
+        print(obj)
+        for key, val in obj.items():
             if key in ignore or not isinstance(val, dict):
                 continue
             if val.get('#') == k:
                 return [key]
             else:
-                try_child = dfs(val)
+                if '#' in val:
+                    try_child = dfs(graph[val['#']])
+                else:
+                    try_child = dfs(val)
                 if try_child:
                     return [key] + try_child
         return []
-    return dfs(graph)
+    for key, val in graph.items():
+        if is_root_soul(key):
+            print(val)
+            try_child = dfs(val)
+            if try_child:
+                return [key] + try_child
+    return []
