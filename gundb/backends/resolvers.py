@@ -45,6 +45,7 @@ def resolve_v(val, graph):
 
 def copy(root, graph):
     return {k: resolve_v(v, graph) for k, v in graph.items() if k not in ignore}
+
 def search(k, graph):
     def dfs(graph):
         for key, val in graph.items():
