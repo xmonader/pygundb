@@ -32,6 +32,7 @@ def resolve_reference(ref, graph):
     if not ref['#'] in graph:
         return {}
     resolved = graph[ref['#']].copy()
+    del resolved['_']
     for k, v in resolved.items():
         if not k in ignore and is_reference(v):
             resolved[k] = resolve_reference(v, graph)
@@ -59,16 +60,3 @@ def search(k, graph):
                     return [key] + try_child
         return []
     return dfs(graph)
-
-def traverse(soul, graph):
-    for key in graph.keys():
-        val = graph[key]
-        if type(val) != dict:
-            continue
-        if '#' in val and val['#'] == soul:
-            return key, graph, key
-        else:
-            try_child = traverse(soul, val)
-            if try_child[0]:
-                return key, try_child[1], try_child[2]
-    return None, None, None
