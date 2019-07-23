@@ -58,14 +58,18 @@ class BackendMixin:
         current = root_object
         for e in path[0:-1]:
             try:
-                current = getattr(current, e)
+                current = current[e]
             except:# The path doesn't exist in the db
                 # Ignore the request
                 logging.debug("Couldn't traverse the database for the found path.")
+                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
                 logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
         logging.debug("Updated successfully!")
-        current[path[-1]] = value
+        if isinstance(current, list):
+            current.append(value)
+        else:
+            current[path[-1]] = value
         self.save_object(root_object, index, schema)
 
     def get(self, soul, key=None):
