@@ -55,7 +55,7 @@ class BackendMixin:
         value = fix_lists(resolve_v(value, graph))
         list_index = get_first_list_prop(path)
         if list_index != -1:
-            self.update_list(root, path[0:list_index + 1], soul, root_object, schema, index, graph)
+            self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
         else:
             self.update_normal(path, value, root_object, schema, index)
         logging.debug("Updated successfully!")
@@ -92,7 +92,7 @@ class BackendMixin:
         if key.startswith('list_'):
             value = listify(value)
         current = root_object
-        for e in path[0:-1]:
+        for e in path[:-1]:
             try:
                 current = current[e]
             except:# The path doesn't exist in the db
