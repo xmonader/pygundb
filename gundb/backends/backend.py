@@ -81,24 +81,11 @@ class BackendMixin:
     def update_list(self, root, path, soul, root_object, schema, index, graph):
         current = graph[root]
         for e in path[:-1]:
-            current = graph[current[e]['_']['#']]
+            current = graph[current[e][METADATA][SOUL]]
 
-        list_id = current[path[-1]]['#']
-        self.update_normal(path, fix_lists(resolve_v({'#': list_id}, graph)), root_object, schema, index)
+        list_id = current[path[-1]][SOUL]
+        self.update_normal(path, fix_lists(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
         return 0
-        current = root_object
-        for e in path[0:-2]:
-            try:
-                current = current[e]
-            except:# The path doesn't exist in the db
-                # Ignore the request
-                logging.debug("Couldn't traverse the database for the found path.")
-                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
-                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
-                return 0
-        current[path[-2]] = resolve_v({'#': soul})
-
-        
 
     def update_normal(self, path, value, root_object, schema, index):
         key = path[-1]
