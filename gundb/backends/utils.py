@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 def uniquify(lst):
     res = []
     for item in lst:
@@ -27,3 +29,17 @@ def get_first_list_prop(lst):
         if e.startswith('list_'):
             return i
     return -1
+
+rec_dd = lambda: defaultdict(rec_dd)
+
+def defaultify(d):
+    "Converts a dict to a nested default dicts"
+    res = defaultdict(rec_dd)
+
+    for k, v in d.items():
+        if isinstance(v, dict):
+            res[k] = defaultify(v)
+        else:
+            res[k] = v
+    return res
+
