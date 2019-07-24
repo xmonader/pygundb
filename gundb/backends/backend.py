@@ -2,15 +2,16 @@ import json
 import copy
 from ..consts import *
 from .resolvers import *
+from .utils import *
 import logging
 
-def uniquify(lst):
-    #lst might be a list of objects
-    res = []
-    for r in lst:
-        if r not in res:
-            res.append(r)
-    return res
+#def uniquify(lst):
+#    #lst might be a list of objects
+#    res = []
+#    for r in lst:
+#        if r not in res:
+#            res.append(r)
+#    return res
 
 class BackendMixin:
     def get_object_by_id(self, obj_id, schema=None):
@@ -23,7 +24,7 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
-        logging.debug("\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n\n".format(soul, key, value))
+        logging.debug("\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n".format(soul, key, value, json.dumps(graph, indent = 4)))
         if soul not in self.db:
             self.db[soul] = {METADATA:{STATE:{}}}
         self.db[soul][key] = value
@@ -45,31 +46,21 @@ class BackendMixin:
             if not path: # Didn't find the soul referenced in any root object
                 # Ignore the request
                 logging.debug("Couldn't find soul :(")
-                logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
+                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
             root = path[0]
             path = path[1:] + [key]
-        value = resolve_v(value, graph)
-        if key.startswith('list_'):
-            value = uniquify(value.values())
-        
         schema, index = parse_schema_and_id(root)
         root_object = self.get_object_by_id(index, schema)
-        current = root_object
-        for e in path[0:-1]:
-            try:
-                current = current[e]
-            except:# The path doesn't exist in the db
-                # Ignore the request
-                logging.debug("Couldn't traverse the database for the found path.")
-                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
-                logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
-                return 0
-        logging.debug("Updated successfully!")
-        if isinstance(current, list):
-            current.append(value)
+        value = fix_lists(resolve_v(value, graph))
+        list_index = get_first_list_prop(path)
+        if list_index != -1:
+            self.update_list(root, path[0:list_index + 1], soul, root_object, schema, index, graph)
         else:
-            current[path[-1]] = value
+            self.update_normal(path, value, root_object, schema, index)
+        logging.debug("Updated successfully!")
+        
+
         self.save_object(root_object, index, schema)
 
     def get(self, soul, key=None):
@@ -84,4 +75,43 @@ class BackendMixin:
             else:
                 res = {**ret, **self.db.get(soul)}
                 return res
-        return ret 
+        return ret
+
+
+    def update_list(self, root, path, soul, root_object, schema, index, graph):
+        current = graph[root]
+        for e in path[:-1]:
+            current = graph[current[e]['_']['#']]
+
+        list_id = current[path[-1]]['#']
+        self.update_normal(path, fix_lists(resolve_v({'#': list_id}, graph)), root_object, schema, index)
+        return 0
+        current = root_object
+        for e in path[0:-2]:
+            try:
+                current = current[e]
+            except:# The path doesn't exist in the db
+                # Ignore the request
+                logging.debug("Couldn't traverse the database for the found path.")
+                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
+                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
+                return 0
+        current[path[-2]] = resolve_v({'#': soul})
+
+        
+
+    def update_normal(self, path, value, root_object, schema, index):
+        key = path[-1]
+        if key.startswith('list_'):
+            value = listify(value)
+        current = root_object
+        for e in path[0:-1]:
+            try:
+                current = current[e]
+            except:# The path doesn't exist in the db
+                # Ignore the request
+                logging.debug("Couldn't traverse the database for the found path.")
+                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
+                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
+                return 0
+        current[path[-1]] = value
