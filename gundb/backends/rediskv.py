@@ -1,6 +1,6 @@
 from collections import defaultdict
 from .backend import BackendMixin
-from .defaultify import defaultify
+from .utils import defaultify
 import json
 
 
