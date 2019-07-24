@@ -5,12 +5,15 @@ import json
 import os
 from .utils import *
 from .backends import *
+from .backends.resolvers import is_root_soul, is_reference
+from .backends.graph import Graph
 import redis
 import time 
 import uuid
 import sys
 import traceback
 import logging
+from collections import defaultdict
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -76,10 +79,15 @@ def loggraph(graph):
     # print("\n\nBACKEND: ", app.backend.list())
 
 
-
 @sockets.route('/gun')
 def gun(ws):
-    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
+    putid = 0
+    while os.path.exists('app' + str(putid) + '.log'):
+        putid += 1
+    print(putid)
+    logging.basicConfig(filename="app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)                
+
     global peers, graph
     peers.append(ws)
     try:
@@ -92,7 +100,13 @@ def gun(ws):
                 if not isinstance(msg, list):
                     msg = [msg]
                 # import ipdb; ipdb.set_trace()
+                rec_dd = lambda: defaultdict(rec_dd)
+                overalldiff = defaultdict(rec_dd)
                 for payload in msg:
+
+                    #log = logging.getLogger()
+                    #log.removeHandler(log.handlers[0])
+                    #log.addHandler(logging.FileHandler('app' + str(putid) + '.log', 'w+'))
                     # print("payload: {}\n\n".format(payload))
                     if isinstance(payload, str):
                         payload = json.loads(payload)
@@ -106,16 +120,20 @@ def gun(ws):
 
                         resp = {'@':msgid, '#':uid, 'ok':True}
                         # print("DIFF:", diff)
-                        for soul, node in diff.items():
-                            for k, v in node.items():
-                                if k == METADATA:
-                                    continue
-                                graph[soul][k]=v
-                            for k, v in node.items():
-                                if k == METADATA:
-                                    continue
-                                app.backend.put(soul, k, v, diff[soul][METADATA][STATE][k], graph)
 
+                        for soul, node in diff.items():
+                            for k, v in diff[soul][METADATA].items():
+                                if isinstance(v, dict):
+                                    overalldiff[soul][METADATA][k] = dict(list(overalldiff[soul][METADATA][k].items()) + list(v.items()))
+                                else:
+                                    overalldiff[soul][METADATA][k] = v
+                            for k, v in node.items():
+                                if k == METADATA:
+                                    continue
+                                overalldiff[soul][k] = v
+
+
+                        
                     elif 'get' in payload:
                         uid = trackid(str(uuid.uuid4()))
                         get = payload['get']
@@ -123,7 +141,7 @@ def gun(ws):
                         ack = lex_from_graph(get, app.backend)
                         loggraph(graph)
                         resp = {'put': ack, '@':msgid, '#':uid, 'ok':True}
-
+                push_diffs(overalldiff, graph)                
                 emit(resp)
                 #print("\n\n sending resp {}\n\n".format(resp))
                 emit(msg)
@@ -133,3 +151,26 @@ def gun(ws):
     peers.remove(ws)
     print("Peers now are: ", peers)
 
+
+def push_diffs(diff, graph):
+    ref_diff = defaultdict(defaultdict)
+    val_diff = defaultdict(defaultdict)
+
+    for soul, node in diff.items():
+        ref_diff[soul][METADATA] = diff[soul][METADATA]
+        for k, v in node.items():
+            if k == METADATA:
+                continue
+            if is_reference(v):
+                ref_diff[soul][k] = v
+            else:
+                val_diff[soul][k] = v
+        
+    Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
+     
+    for soul, node in val_diff.items():
+        for k, v in node.items():
+            if k == METADATA or is_root_soul(k):
+                continue
+            app.backend.put(soul, k, v, diff[soul][METADATA][STATE][k], graph)
+    return graph
