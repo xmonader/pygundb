@@ -171,7 +171,7 @@ def push_diffs(diff, graph):
             else:
                 val_diff[soul][k] = v
     
-    Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
+    #Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
      
     for soul, node in val_diff.items():
         for k, v in node.items():
