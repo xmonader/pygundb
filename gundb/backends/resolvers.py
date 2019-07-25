@@ -100,6 +100,7 @@ def search(k, graph):
                 return [key]
             else:
                 if is_reference(val): # The dict is a reference
+                    ## FIXME: raises when running node_tests
                     try_child = dfs(graph[val['#']]) # Search in the object it references
                 else:
                     try_child = dfs(val) # Otherwise, search in it directly (This case shouldn't be handled given the graph conforms to GUN rules)
