@@ -1,6 +1,9 @@
 # pygun
 minimal `gun.js` implementation in python
 
+![[https://travis-ci.org/xmonader/pygundb]](https://travis-ci.org/xmonader/pygundb.png)
+
+
 ## Installation
 - clone the repo
 - pip3 install -r requirements.txt
@@ -156,3 +159,8 @@ We use Gun.js javascript client to communicate with pygundb as normal, but with 
 ```
 
 
+
+
+
+# API usage 
+pygundb [documentation](https://xmonader.github.io/pygundb/api/gundb/)

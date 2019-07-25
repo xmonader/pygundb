@@ -129,7 +129,12 @@ class BackendMixin:
             except:# The path doesn't exist in the db
                 # Ignore the request
                 logging.debug("Couldn't traverse the database for the found path.")
-                logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
+                try:
+                    logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
+                except:
+                    # in case of current is dict with ObjectId from mongo
+                    logging.debug('path: {}\n\n'.format([current] + path))
+
                 #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
         current[path[-1]] = value
