@@ -1,9 +1,9 @@
 import json
 import asyncio
 import websockets
-from .utils import newuid, new_node, ham_mix
-from .backends import *
-from .consts import METADATA, SOUL, STATE
+from gundb.utils import * 
+from gundb.backends import *
+from gundb.consts import METADATA, SOUL, STATE
 
 def format_put_request(soul, **kwargs):
     ch = {
@@ -71,4 +71,21 @@ class GunClient:
                     self.backend.put(soul, k, v, kstate)
             return self.backend.get(soul, key)
 
+async def test():
 
+    c = GunClient()
+    print(c.backend.db)
+    await c.put('box', w=10, h=20)
+    box = await c.get('box')
+    print("Box is: ", box)
+    w = await c.get('box', 'w')
+    print("W is : ", w)
+    print(c.backend.db)
+
+def cltest():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(test())
+
+
+if __name__ == "__main__":
+    cltest()

@@ -69,6 +69,7 @@
         gun.get("proj.human://8").get("list_favcolors").set("white")
         gun.get("proj.human://8").get("list_favcolors").set("red")
         gun.get("proj.human://8").get("list_favcolors").set("blue")
+        gun.get("proj.human://8").get("list_favcolors").unset("red")
 
         gun.get("proj.human://8").get("list_langs").set({
           "name": "python"
@@ -78,8 +79,18 @@
         })
 
       }
+			let nesetedListTest = () => {
+				gun.get("proj.programmar://8").get("list_langs").set({
+					"name": "python",
+					"list_releases": {
+					"0": "3.6",
+					"1": "3.7"
+					}
+				})
+      }
       basicTest()
       midTest()
       advTest()
+			nesetedListTest()
       console.log("here now..")
     </script>

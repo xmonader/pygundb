@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>gundb.server API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gundb.server</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">from flask import Flask, request, send_from_directory, send_file, render_template, jsonify
+from flask_sockets import Sockets
+from time import sleep
+import json
+import os
+from .utils import *
+from .backends import *
+from .backends.resolvers import is_root_soul, is_reference
+from .backends.graph import Graph
+import redis
+import time 
+import uuid
+import sys
+import traceback
+import logging
+from collections import defaultdict
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+
+app = Flask(__name__)
+backend_db = os.getenv(&#34;GUNDB&#34;, &#34;mem&#34;)
+print(&#34;backenddb var: &#34;, backend_db)
+if backend_db == &#34;mem&#34;:
+    print(&#34;mem backend&#34;)
+    app.backend =  Memory() #Pickle()
+elif backend_db == &#34;mongo&#34;:
+    print(&#34;mongo backend&#34;)
+    app.backend = Mongo()
+elif backend_db == &#34;pickle&#34;:
+    print(&#34;pickle backend&#34;)
+    app.backend = Pickle()
+elif backend_db == &#34;redis&#34;:
+    app.backend = RedisKV()
+elif backend_db == &#34;dummy&#34;:
+    app.backend = DummyKV()
+elif backend_db == &#34;pickle&#34;:
+    app.backend = Pickle()
+elif backend_db == &#34;udb&#34;:
+    app.backend = UDB()
+
+sockets = Sockets(app)
+
+print(&#34;APP: &#34;, app)
+
+@app.route(&#39;/static/&lt;path:path&gt;&#39;)
+def send_public(path):
+    return send_from_directory(&#39;static&#39; + &#39;/&#39; + path)
+
+peers = []
+graph = {} 
+trackedids = []
+
+def trackid(id_):
+    if id_ not in trackedids:
+        # print(&#34;CREATING NEW ID:::&#34;, id_)
+        trackedids.append(id_)
+    return id_
+
+
+def emit(data):
+    resp = json.dumps(data)
+    # print(&#34;emitting :&#34;,  data)
+    for p in peers:
+        # print(&#34;Sending resp: &#34;, resp, &#34; to &#34;, p)
+        p.send(resp)
+
+
+def loggraph(graph):
+    global app
+    pass
+    # for soul, node in graph.items():
+    #     print(&#34;\nSoul: &#34;, soul)
+    #     print(&#34;\n\t\tNode: &#34;, node)
+    #     for k, v in node.items():
+    #         print(&#34;\n\t\t{} =&gt; {}&#34;.format(k, v))
+    
+    # print(&#34;TRACKED: &#34;, trackedids, &#34; #&#34;, len(trackedids))
+    # print(&#34;\n\nBACKEND: &#34;, app.backend.list())
+
+
+@sockets.route(&#39;/gun&#39;)
+def gun(ws):
+
+    putid = 0
+    while os.path.exists(&#39;app&#39; + str(putid) + &#39;.log&#39;):
+        putid += 1
+    print(putid)
+    logging.basicConfig(filename=&#34;app&#34; + str(putid) + &#34;.log&#34;, filemode=&#39;w&#39;, level=logging.DEBUG)                
+
+    global peers, graph
+    peers.append(ws)
+    try:
+        while not ws.closed:
+            msgstr = ws.receive() 
+            resp = {&#39;ok&#39;:True}
+            if msgstr is not None:
+                msg = json.loads(msgstr)
+                #print(&#34;\n\n\n received {} \n\n\n&#34;.format(msg))
+                if not isinstance(msg, list):
+                    msg = [msg]
+                rec_dd = lambda: defaultdict(rec_dd)
+                overalldiff = defaultdict(rec_dd)
+                for payload in msg:
+
+                    # print(&#34;payload: {}\n\n&#34;.format(payload))
+                    if isinstance(payload, str):
+                        payload = json.loads(payload)
+                    if &#39;put&#39; in payload:
+                        change = payload[&#39;put&#39;]
+                        msgid = payload[&#39;#&#39;]
+                        diff = ham_mix(change, graph)
+                        uid = trackid(str(uuid.uuid4()))
+                        loggraph(graph)
+                        # make sure to send error too in case of failed ham_mix
+
+                        resp = {&#39;@&#39;:msgid, &#39;#&#39;:uid, &#39;ok&#39;:True}
+                        # print(&#34;DIFF:&#34;, diff)
+
+                        for soul, node in diff.items():
+                            for k, v in diff[soul][METADATA].items():
+                                if isinstance(v, dict):
+                                    overalldiff[soul][METADATA][k] = dict(list(overalldiff[soul][METADATA][k].items()) + list(v.items()))
+                                else:
+                                    overalldiff[soul][METADATA][k] = v
+                            for k, v in node.items():
+                                if k == METADATA:
+                                    continue
+                                overalldiff[soul][k] = v
+
+
+                        
+                    elif &#39;get&#39; in payload:
+                        uid = trackid(str(uuid.uuid4()))
+                        get = payload[&#39;get&#39;]
+                        msgid = payload[&#39;#&#39;]
+                        ack = lex_from_graph(get, app.backend)
+                        loggraph(graph)
+                        resp = {&#39;put&#39;: ack, &#39;@&#39;:msgid, &#39;#&#39;:uid, &#39;ok&#39;:True}
+                push_diffs(overalldiff, graph)                
+                emit(resp)
+                #print(&#34;\n\n sending resp {}\n\n&#34;.format(resp))
+                emit(msg)
+    except Exception as e:
+        print(&#34;ERR:&#34; ,e)
+        traceback.print_exc(file=sys.stdout)
+    peers.remove(ws)
+    print(&#34;Peers now are: &#34;, peers)
+
+
+def push_diffs(diff, graph):
+    &#34;&#34;&#34;
+    Apply diff to reflect the changes in graph into the database.
+
+    Diff are divided into reference updates and value updates.
+    
+    Reference updates are applied first then value updates.
+    &#34;&#34;&#34;
+    ref_diff = defaultdict(defaultdict)
+    val_diff = defaultdict(defaultdict)
+
+    for soul, node in diff.items():
+        ref_diff[soul][METADATA] = diff[soul][METADATA]
+        for k, v in node.items():
+            if k == METADATA:
+                continue
+            if is_reference(v):
+                ref_diff[soul][k] = v
+            else:
+                val_diff[soul][k] = v
+        
+    Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
+     
+    for soul, node in val_diff.items():
+        for k, v in node.items():
+            if k == METADATA or is_root_soul(k):
+                continue
+            app.backend.put(soul, k, v, diff[soul][METADATA][STATE][k], graph)
+    return graph</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gundb.server.emit"><code class="name flex">
+<span>def <span class="ident">emit</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def emit(data):
+    resp = json.dumps(data)
+    # print(&#34;emitting :&#34;,  data)
+    for p in peers:
+        # print(&#34;Sending resp: &#34;, resp, &#34; to &#34;, p)
+        p.send(resp)</code></pre>
+</details>
+</dd>
+<dt id="gundb.server.gun"><code class="name flex">
+<span>def <span class="ident">gun</span></span>(<span>ws)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@sockets.route(&#39;/gun&#39;)
+def gun(ws):
+
+    putid = 0
+    while os.path.exists(&#39;app&#39; + str(putid) + &#39;.log&#39;):
+        putid += 1
+    print(putid)
+    logging.basicConfig(filename=&#34;app&#34; + str(putid) + &#34;.log&#34;, filemode=&#39;w&#39;, level=logging.DEBUG)                
+
+    global peers, graph
+    peers.append(ws)
+    try:
+        while not ws.closed:
+            msgstr = ws.receive() 
+            resp = {&#39;ok&#39;:True}
+            if msgstr is not None:
+                msg = json.loads(msgstr)
+                #print(&#34;\n\n\n received {} \n\n\n&#34;.format(msg))
+                if not isinstance(msg, list):
+                    msg = [msg]
+                rec_dd = lambda: defaultdict(rec_dd)
+                overalldiff = defaultdict(rec_dd)
+                for payload in msg:
+
+                    # print(&#34;payload: {}\n\n&#34;.format(payload))
+                    if isinstance(payload, str):
+                        payload = json.loads(payload)
+                    if &#39;put&#39; in payload:
+                        change = payload[&#39;put&#39;]
+                        msgid = payload[&#39;#&#39;]
+                        diff = ham_mix(change, graph)
+                        uid = trackid(str(uuid.uuid4()))
+                        loggraph(graph)
+                        # make sure to send error too in case of failed ham_mix
+
+                        resp = {&#39;@&#39;:msgid, &#39;#&#39;:uid, &#39;ok&#39;:True}
+                        # print(&#34;DIFF:&#34;, diff)
+
+                        for soul, node in diff.items():
+                            for k, v in diff[soul][METADATA].items():
+                                if isinstance(v, dict):
+                                    overalldiff[soul][METADATA][k] = dict(list(overalldiff[soul][METADATA][k].items()) + list(v.items()))
+                                else:
+                                    overalldiff[soul][METADATA][k] = v
+                            for k, v in node.items():
+                                if k == METADATA:
+                                    continue
+                                overalldiff[soul][k] = v
+
+
+                        
+                    elif &#39;get&#39; in payload:
+                        uid = trackid(str(uuid.uuid4()))
+                        get = payload[&#39;get&#39;]
+                        msgid = payload[&#39;#&#39;]
+                        ack = lex_from_graph(get, app.backend)
+                        loggraph(graph)
+                        resp = {&#39;put&#39;: ack, &#39;@&#39;:msgid, &#39;#&#39;:uid, &#39;ok&#39;:True}
+                push_diffs(overalldiff, graph)                
+                emit(resp)
+                #print(&#34;\n\n sending resp {}\n\n&#34;.format(resp))
+                emit(msg)
+    except Exception as e:
+        print(&#34;ERR:&#34; ,e)
+        traceback.print_exc(file=sys.stdout)
+    peers.remove(ws)
+    print(&#34;Peers now are: &#34;, peers)</code></pre>
+</details>
+</dd>
+<dt id="gundb.server.loggraph"><code class="name flex">
+<span>def <span class="ident">loggraph</span></span>(<span>graph)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def loggraph(graph):
+    global app
+    pass</code></pre>
+</details>
+</dd>
+<dt id="gundb.server.push_diffs"><code class="name flex">
+<span>def <span class="ident">push_diffs</span></span>(<span>diff, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Apply diff to reflect the changes in graph into the database.</p>
+<p>Diff are divided into reference updates and value updates.</p>
+<p>Reference updates are applied first then value updates.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def push_diffs(diff, graph):
+    &#34;&#34;&#34;
+    Apply diff to reflect the changes in graph into the database.
+
+    Diff are divided into reference updates and value updates.
+    
+    Reference updates are applied first then value updates.
+    &#34;&#34;&#34;
+    ref_diff = defaultdict(defaultdict)
+    val_diff = defaultdict(defaultdict)
+
+    for soul, node in diff.items():
+        ref_diff[soul][METADATA] = diff[soul][METADATA]
+        for k, v in node.items():
+            if k == METADATA:
+                continue
+            if is_reference(v):
+                ref_diff[soul][k] = v
+            else:
+                val_diff[soul][k] = v
+        
+    Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
+     
+    for soul, node in val_diff.items():
+        for k, v in node.items():
+            if k == METADATA or is_root_soul(k):
+                continue
+            app.backend.put(soul, k, v, diff[soul][METADATA][STATE][k], graph)
+    return graph</code></pre>
+</details>
+</dd>
+<dt id="gundb.server.send_public"><code class="name flex">
+<span>def <span class="ident">send_public</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@app.route(&#39;/static/&lt;path:path&gt;&#39;)
+def send_public(path):
+    return send_from_directory(&#39;static&#39; + &#39;/&#39; + path)</code></pre>
+</details>
+</dd>
+<dt id="gundb.server.trackid"><code class="name flex">
+<span>def <span class="ident">trackid</span></span>(<span>id_)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def trackid(id_):
+    if id_ not in trackedids:
+        # print(&#34;CREATING NEW ID:::&#34;, id_)
+        trackedids.append(id_)
+    return id_</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gundb" href="index.html">gundb</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="gundb.server.emit" href="#gundb.server.emit">emit</a></code></li>
+<li><code><a title="gundb.server.gun" href="#gundb.server.gun">gun</a></code></li>
+<li><code><a title="gundb.server.loggraph" href="#gundb.server.loggraph">loggraph</a></code></li>
+<li><code><a title="gundb.server.push_diffs" href="#gundb.server.push_diffs">push_diffs</a></code></li>
+<li><code><a title="gundb.server.send_public" href="#gundb.server.send_public">send_public</a></code></li>
+<li><code><a title="gundb.server.trackid" href="#gundb.server.trackid">trackid</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

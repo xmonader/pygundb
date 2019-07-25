@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>gundb.backends.backend API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gundb.backends.backend</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">import json
+import copy
+from ..consts import *
+from .resolvers import *
+from .utils import *
+import logging
+
+#def uniquify(lst):
+#    #lst might be a list of objects
+#    res = []
+#    for r in lst:
+#        if r not in res:
+#            res.append(r)
+#    return res
+
+class BackendMixin:
+    def get_object_by_id(self, obj_id, schema=None):
+        pass
+
+    def set_object_attr(self, obj, attr, val):
+        pass
+    
+    def save_object(self, obj, obj_id, schema=None):
+        pass
+    
+    def put(self, soul, key, value, state, graph):
+        &#34;&#34;&#34;
+        Handles a put request.
+        Reflect the update graph[soul][key] = value in the database.
+        First, it finds the root object to which the soul belongs, \
+                then depending if a list is involved in the path from the root to the changed property, \
+                update_normal or update_list is called.
+
+        Args:
+            soul  (str) : The soul in which the property will be changed.
+            key   (str) : The key that will be changed.
+            value       : The new value associated with the key.
+            state (dict): The state.
+            graph (dict): The updated GUN graph.
+        &#34;&#34;&#34;
+
+        logging.debug(&#34;\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n&#34;.format(soul, key, value, json.dumps(graph, indent = 4)))
+        if soul not in self.db:
+            self.db[soul] = {METADATA:{STATE:{}}}
+        self.db[soul][key] = value
+        self.db[soul][METADATA][STATE][key] = state
+        
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except:
+                pass 
+
+        if is_root_soul(soul): # root object
+            logging.debug(&#34;Direct property of a root object.&#34;)
+            root = soul
+            path = [key]
+        else: 
+            logging.debug(&#34;Nested soul that must be looked for.&#34;)
+            path = search(soul, graph)
+            if not path: # Didn&#39;t find the soul referenced in any root object
+                # Ignore the request
+                logging.debug(&#34;Couldn&#39;t find soul :(&#34;)
+                #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+                return 0
+            root = path[0]
+            path = path[1:] + [key]
+        schema, index = parse_schema_and_id(root)
+        root_object = self.get_object_by_id(index, schema)
+        value = fix_lists(resolve_v(value, graph))
+        list_index = get_first_list_prop(path)
+        if list_index != -1:
+            self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
+        else:
+            self.update_normal(path, value, root_object, schema, index)
+        logging.debug(&#34;Updated successfully!&#34;)
+        
+
+        self.save_object(root_object, index, schema)
+
+    def get(self, soul, key=None):
+        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
+
+        res = None
+        if soul in self.db:
+            ret[METADATA] = self.db[soul][METADATA]
+            if key and isinstance(key, str):
+                res = {**ret, **self.db.get(soul)}
+                return res.get(key, {})
+            else:
+                res = {**ret, **self.db.get(soul)}
+                return res
+        return ret
+
+
+    def update_list(self, root, path, soul, root_object, schema, index, graph):
+        &#34;&#34;&#34;
+        Update list property.
+        
+        Walks through the graph first to retrieve the soul of the list, \
+            Then updates the list in the db by resolving it first from the graph.
+        &#34;&#34;&#34;
+        current = graph[root]
+        for e in path[:-1]:
+            current = graph[current[e][METADATA][SOUL]]
+
+        list_id = current[path[-1]][SOUL]
+        self.update_normal(path, fix_lists(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
+        return 0
+
+    def update_normal(self, path, value, root_object, schema, index):
+        &#34;&#34;&#34;
+        Update a normal property.
+
+        Args:
+            path        (list): The keys to follow from root_object to reach the desired path.
+            value             : The value to be stored in this location.
+            root_object (dict): The root object from GUN graph.
+            schema      (str) : The schema of the root soul. Root soul is in the format schema://index
+            index       (str) : The index of the root soul.
+        &#34;&#34;&#34;
+        key = path[-1]
+        if key.startswith(&#39;list_&#39;):
+            value = listify(value)
+        current = root_object
+        for e in path[:-1]:
+            try:
+                current = current[e]
+            except:# The path doesn&#39;t exist in the db
+                # Ignore the request
+                logging.debug(&#34;Couldn&#39;t traverse the database for the found path.&#34;)
+                logging.debug(&#39;path: {}\n\n&#39;.format(json.dumps([current] + path, indent = 4)))
+                #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+                return 0
+        current[path[-1]] = value</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gundb.backends.backend.BackendMixin"><code class="flex name class">
+<span>class <span class="ident">BackendMixin</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class BackendMixin:
+    def get_object_by_id(self, obj_id, schema=None):
+        pass
+
+    def set_object_attr(self, obj, attr, val):
+        pass
+    
+    def save_object(self, obj, obj_id, schema=None):
+        pass
+    
+    def put(self, soul, key, value, state, graph):
+        &#34;&#34;&#34;
+        Handles a put request.
+        Reflect the update graph[soul][key] = value in the database.
+        First, it finds the root object to which the soul belongs, \
+                then depending if a list is involved in the path from the root to the changed property, \
+                update_normal or update_list is called.
+
+        Args:
+            soul  (str) : The soul in which the property will be changed.
+            key   (str) : The key that will be changed.
+            value       : The new value associated with the key.
+            state (dict): The state.
+            graph (dict): The updated GUN graph.
+        &#34;&#34;&#34;
+
+        logging.debug(&#34;\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n&#34;.format(soul, key, value, json.dumps(graph, indent = 4)))
+        if soul not in self.db:
+            self.db[soul] = {METADATA:{STATE:{}}}
+        self.db[soul][key] = value
+        self.db[soul][METADATA][STATE][key] = state
+        
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except:
+                pass 
+
+        if is_root_soul(soul): # root object
+            logging.debug(&#34;Direct property of a root object.&#34;)
+            root = soul
+            path = [key]
+        else: 
+            logging.debug(&#34;Nested soul that must be looked for.&#34;)
+            path = search(soul, graph)
+            if not path: # Didn&#39;t find the soul referenced in any root object
+                # Ignore the request
+                logging.debug(&#34;Couldn&#39;t find soul :(&#34;)
+                #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+                return 0
+            root = path[0]
+            path = path[1:] + [key]
+        schema, index = parse_schema_and_id(root)
+        root_object = self.get_object_by_id(index, schema)
+        value = fix_lists(resolve_v(value, graph))
+        list_index = get_first_list_prop(path)
+        if list_index != -1:
+            self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
+        else:
+            self.update_normal(path, value, root_object, schema, index)
+        logging.debug(&#34;Updated successfully!&#34;)
+        
+
+        self.save_object(root_object, index, schema)
+
+    def get(self, soul, key=None):
+        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
+
+        res = None
+        if soul in self.db:
+            ret[METADATA] = self.db[soul][METADATA]
+            if key and isinstance(key, str):
+                res = {**ret, **self.db.get(soul)}
+                return res.get(key, {})
+            else:
+                res = {**ret, **self.db.get(soul)}
+                return res
+        return ret
+
+
+    def update_list(self, root, path, soul, root_object, schema, index, graph):
+        &#34;&#34;&#34;
+        Update list property.
+        
+        Walks through the graph first to retrieve the soul of the list, \
+            Then updates the list in the db by resolving it first from the graph.
+        &#34;&#34;&#34;
+        current = graph[root]
+        for e in path[:-1]:
+            current = graph[current[e][METADATA][SOUL]]
+
+        list_id = current[path[-1]][SOUL]
+        self.update_normal(path, fix_lists(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
+        return 0
+
+    def update_normal(self, path, value, root_object, schema, index):
+        &#34;&#34;&#34;
+        Update a normal property.
+
+        Args:
+            path        (list): The keys to follow from root_object to reach the desired path.
+            value             : The value to be stored in this location.
+            root_object (dict): The root object from GUN graph.
+            schema      (str) : The schema of the root soul. Root soul is in the format schema://index
+            index       (str) : The index of the root soul.
+        &#34;&#34;&#34;
+        key = path[-1]
+        if key.startswith(&#39;list_&#39;):
+            value = listify(value)
+        current = root_object
+        for e in path[:-1]:
+            try:
+                current = current[e]
+            except:# The path doesn&#39;t exist in the db
+                # Ignore the request
+                logging.debug(&#34;Couldn&#39;t traverse the database for the found path.&#34;)
+                logging.debug(&#39;path: {}\n\n&#39;.format(json.dumps([current] + path, indent = 4)))
+                #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+                return 0
+        current[path[-1]] = value</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="gundb.backends.dummykv.DummyKV" href="dummykv.html#gundb.backends.dummykv.DummyKV">DummyKV</a></li>
+<li><a title="gundb.backends.memory.Memory" href="memory.html#gundb.backends.memory.Memory">Memory</a></li>
+<li><a title="gundb.backends.pickle.Pickle" href="pickle.html#gundb.backends.pickle.Pickle">Pickle</a></li>
+<li><a title="gundb.backends.rediskv.RedisKV" href="rediskv.html#gundb.backends.rediskv.RedisKV">RedisKV</a></li>
+<li><a title="gundb.backends.mongo.Mongo" href="mongo.html#gundb.backends.mongo.Mongo">Mongo</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="gundb.backends.backend.BackendMixin.get"><code class="name flex">
+<span>def <span class="ident">get</span></span>(<span>self, soul, key=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get(self, soul, key=None):
+    ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
+
+    res = None
+    if soul in self.db:
+        ret[METADATA] = self.db[soul][METADATA]
+        if key and isinstance(key, str):
+            res = {**ret, **self.db.get(soul)}
+            return res.get(key, {})
+        else:
+            res = {**ret, **self.db.get(soul)}
+            return res
+    return ret</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.get_object_by_id"><code class="name flex">
+<span>def <span class="ident">get_object_by_id</span></span>(<span>self, obj_id, schema=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_object_by_id(self, obj_id, schema=None):
+    pass</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.put"><code class="name flex">
+<span>def <span class="ident">put</span></span>(<span>self, soul, key, value, state, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Handles a put request.
+Reflect the update graph[soul][key] = value in the database.
+First, it finds the root object to which the soul belongs,
+then depending if a list is involved in the path from the root to the changed property,
+update_normal or update_list is called.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt>soul
+(str) : The soul in which the property will be changed.</dt>
+<dt>key
+(str) : The key that will be changed.</dt>
+<dt>value
+: The new value associated with the key.</dt>
+<dt><strong><code>state</code></strong> :&ensp;<code>dict</code></dt>
+<dd>The state.</dd>
+<dt><strong><code>graph</code></strong> :&ensp;<code>dict</code></dt>
+<dd>The updated GUN graph.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def put(self, soul, key, value, state, graph):
+    &#34;&#34;&#34;
+    Handles a put request.
+    Reflect the update graph[soul][key] = value in the database.
+    First, it finds the root object to which the soul belongs, \
+            then depending if a list is involved in the path from the root to the changed property, \
+            update_normal or update_list is called.
+
+    Args:
+        soul  (str) : The soul in which the property will be changed.
+        key   (str) : The key that will be changed.
+        value       : The new value associated with the key.
+        state (dict): The state.
+        graph (dict): The updated GUN graph.
+    &#34;&#34;&#34;
+
+    logging.debug(&#34;\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n&#34;.format(soul, key, value, json.dumps(graph, indent = 4)))
+    if soul not in self.db:
+        self.db[soul] = {METADATA:{STATE:{}}}
+    self.db[soul][key] = value
+    self.db[soul][METADATA][STATE][key] = state
+    
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except:
+            pass 
+
+    if is_root_soul(soul): # root object
+        logging.debug(&#34;Direct property of a root object.&#34;)
+        root = soul
+        path = [key]
+    else: 
+        logging.debug(&#34;Nested soul that must be looked for.&#34;)
+        path = search(soul, graph)
+        if not path: # Didn&#39;t find the soul referenced in any root object
+            # Ignore the request
+            logging.debug(&#34;Couldn&#39;t find soul :(&#34;)
+            #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+            return 0
+        root = path[0]
+        path = path[1:] + [key]
+    schema, index = parse_schema_and_id(root)
+    root_object = self.get_object_by_id(index, schema)
+    value = fix_lists(resolve_v(value, graph))
+    list_index = get_first_list_prop(path)
+    if list_index != -1:
+        self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
+    else:
+        self.update_normal(path, value, root_object, schema, index)
+    logging.debug(&#34;Updated successfully!&#34;)
+    
+
+    self.save_object(root_object, index, schema)</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.save_object"><code class="name flex">
+<span>def <span class="ident">save_object</span></span>(<span>self, obj, obj_id, schema=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def save_object(self, obj, obj_id, schema=None):
+    pass</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.set_object_attr"><code class="name flex">
+<span>def <span class="ident">set_object_attr</span></span>(<span>self, obj, attr, val)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_object_attr(self, obj, attr, val):
+    pass</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.update_list"><code class="name flex">
+<span>def <span class="ident">update_list</span></span>(<span>self, root, path, soul, root_object, schema, index, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Update list property.</p>
+<p>Walks through the graph first to retrieve the soul of the list,
+Then updates the list in the db by resolving it first from the graph.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def update_list(self, root, path, soul, root_object, schema, index, graph):
+    &#34;&#34;&#34;
+    Update list property.
+    
+    Walks through the graph first to retrieve the soul of the list, \
+        Then updates the list in the db by resolving it first from the graph.
+    &#34;&#34;&#34;
+    current = graph[root]
+    for e in path[:-1]:
+        current = graph[current[e][METADATA][SOUL]]
+
+    list_id = current[path[-1]][SOUL]
+    self.update_normal(path, fix_lists(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
+    return 0</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.backend.BackendMixin.update_normal"><code class="name flex">
+<span>def <span class="ident">update_normal</span></span>(<span>self, path, value, root_object, schema, index)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Update a normal property.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt>path
+(list): The keys to follow from root_object to reach the desired path.</dt>
+<dt>value
+: The value to be stored in this location.</dt>
+<dt><strong><code>root_object</code></strong> :&ensp;<code>dict</code></dt>
+<dd>The root object from GUN graph.</dd>
+</dl>
+<p>schema
+(str) : The schema of the root soul. Root soul is in the format schema://index
+index
+(str) : The index of the root soul.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def update_normal(self, path, value, root_object, schema, index):
+    &#34;&#34;&#34;
+    Update a normal property.
+
+    Args:
+        path        (list): The keys to follow from root_object to reach the desired path.
+        value             : The value to be stored in this location.
+        root_object (dict): The root object from GUN graph.
+        schema      (str) : The schema of the root soul. Root soul is in the format schema://index
+        index       (str) : The index of the root soul.
+    &#34;&#34;&#34;
+    key = path[-1]
+    if key.startswith(&#39;list_&#39;):
+        value = listify(value)
+    current = root_object
+    for e in path[:-1]:
+        try:
+            current = current[e]
+        except:# The path doesn&#39;t exist in the db
+            # Ignore the request
+            logging.debug(&#34;Couldn&#39;t traverse the database for the found path.&#34;)
+            logging.debug(&#39;path: {}\n\n&#39;.format(json.dumps([current] + path, indent = 4)))
+            #logging.debug(&#34;graph: {}\n\n&#34;.format(json.dumps(graph, indent = 4)))
+            return 0
+    current[path[-1]] = value</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gundb.backends" href="index.html">gundb.backends</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gundb.backends.backend.BackendMixin" href="#gundb.backends.backend.BackendMixin">BackendMixin</a></code></h4>
+<ul class="two-column">
+<li><code><a title="gundb.backends.backend.BackendMixin.get" href="#gundb.backends.backend.BackendMixin.get">get</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.get_object_by_id" href="#gundb.backends.backend.BackendMixin.get_object_by_id">get_object_by_id</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.put" href="#gundb.backends.backend.BackendMixin.put">put</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.save_object" href="#gundb.backends.backend.BackendMixin.save_object">save_object</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.set_object_attr" href="#gundb.backends.backend.BackendMixin.set_object_attr">set_object_attr</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.update_list" href="#gundb.backends.backend.BackendMixin.update_list">update_list</a></code></li>
+<li><code><a title="gundb.backends.backend.BackendMixin.update_normal" href="#gundb.backends.backend.BackendMixin.update_normal">update_normal</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
