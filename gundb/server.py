@@ -81,12 +81,11 @@ def loggraph(graph):
 
 @sockets.route('/gun')
 def gun(ws):
-
+    os.makedirs('logs', exist_ok=True)
     putid = 0
-    while os.path.exists('app' + str(putid) + '.log'):
+    while os.path.exists('logs/app' + str(putid) + '.log'):
         putid += 1
-    print(putid)
-    logging.basicConfig(filename="app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)                
+    logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)                
 
     global peers, graph
     peers.append(ws)
@@ -155,6 +154,9 @@ def push_diffs(diff, graph):
     Diff are divided into reference updates and value updates.
     
     Reference updates are applied first then value updates.
+    
+    NOTE: Reference update shouldn't be applied as it will remove unmentioned properties in the new graph.
+          Instead it shoul be ignored completely. And any value update inside it will create it for free.
     """
     ref_diff = defaultdict(defaultdict)
     val_diff = defaultdict(defaultdict)
@@ -168,7 +170,7 @@ def push_diffs(diff, graph):
                 ref_diff[soul][k] = v
             else:
                 val_diff[soul][k] = v
-        
+    
     Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
      
     for soul, node in val_diff.items():
