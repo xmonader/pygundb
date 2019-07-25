@@ -1,6 +1,9 @@
 """This is a module that is responsible for:
+    
     1. Resolving references from the graph.
+    
     2. Searching for a soul that is referenced directly or indirectly by some root object and returns its path.
+    
     3. Helper function to fetch data from keys and decide its type.
 """
 
