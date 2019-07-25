@@ -16,9 +16,9 @@ class RedisKV(BackendMixin):
     def get_object_by_id(self, obj_id, schema=None):
         full_id = format_object_id(schema, obj_id)
         if self.redis.exists(full_id):
-            return defaultify(json.loads(self.redis.get(full_id)))
+            return json.loads(self.redis.get(full_id))
         else:
-            return defaultify({'id':obj_id})
+            return {'id':obj_id}
 
     def set_object_attr(self, obj, attr, val):
         obj[attr] = val
