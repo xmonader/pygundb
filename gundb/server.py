@@ -86,6 +86,12 @@ def gun(ws):
     while os.path.exists('logs/app' + str(putid) + '.log'):
         putid += 1
     logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)                
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
+    console.setFormatter(formatter)
+    logging.getLogger("").addHandler(console)
 
     global peers, graph
     peers.append(ws)
