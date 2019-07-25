@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>gundb.backends.resolvers API documentation</title>
+<meta name="description" content="This is a module that is responsible for:
+1. Resolving references from the graph.
+2. Searching for a soul that is referenced directly or indirectly by …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gundb.backends.resolvers</code></h1>
+</header>
+<section id="section-intro">
+<p>This is a module that is responsible for:
+1. Resolving references from the graph.
+2. Searching for a soul that is referenced directly or indirectly by some root object and returns its path.
+3. Helper function to fetch data from keys and decide its type.</p>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">&#34;&#34;&#34;This is a module that is responsible for:
+    1. Resolving references from the graph.
+    2. Searching for a soul that is referenced directly or indirectly by some root object and returns its path.
+    3. Helper function to fetch data from keys and decide its type.
+&#34;&#34;&#34;
+
+import re
+
+SCHEME_UID_PAT = &#34;(?P&lt;schema&gt;.+?)://(?P&lt;id&gt;.+)&#34;
+
+def parse_schema_and_id(s):
+    &#34;&#34;&#34;
+    Returns the schema and id of the passed soul. None, None if doens&#39;t match a root soul.
+
+    Root souls is in the form &#39;schem://id&#39;
+    &#34;&#34;&#34;
+    m = re.match(SCHEME_UID_PAT, s)
+    if m:
+        return m.groupdict()[&#39;schema&#39;], int(m.groupdict()[&#39;id&#39;]) 
+    return None, None
+
+def is_root_soul(s):
+    &#34;&#34;&#34;
+    Returns a boolean indicating whether the key s is a root soul.
+
+    Root soul is in the form &#39;schema://id&#39;
+    &#34;&#34;&#34;
+    return &#34;://&#34; in s
+
+def is_nested(s):
+    return not is_root_soul(s)
+
+def get_nested_soul_node(s, graph):
+    return graph.get(s, {})
+
+def filter_root_objects(graph):
+    for kroot, rootnode in graph.items():
+        if &#34;://&#34; in kroot:
+            yield kroot, rootnode
+
+ignore = [&#34;_&#34;, &#34;&gt;&#34;, &#34;#&#34;]
+
+def is_reference(d):
+    &#34;&#34;&#34;
+    Returns a boolean indicating whether the passed argument is reference.
+
+    A reference is a fict in the form {&#39;#&#39;: soul}
+    &#34;&#34;&#34;
+    return isinstance(d, dict) and &#39;#&#39; in d
+
+def resolve_reference(ref, graph):
+    &#34;&#34;&#34;
+    Resolves a reference in the form {&#39;#&#39;: soul} from the given graph.
+
+    Works recursively: All nested references are also resolved
+    &#34;&#34;&#34;
+    assert(is_reference(ref))
+    if not ref[&#39;#&#39;] in graph: # The reference points to a non existent soul
+        #Shouldn&#39;t be reached
+        return {}
+
+    # Shallow copy the object from a graph without its meta data.
+    resolved = graph[ref[&#39;#&#39;]].copy()
+    del resolved[&#39;_&#39;]
+    
+    for k, v in resolved.items():
+        # Resolve reference items
+        if not k in ignore and is_reference(v):
+            resolved[k] = resolve_reference(v, graph)
+    return resolved
+
+def resolve_v(val, graph):
+    &#34;&#34;&#34;
+    If val is a reference, return a copy of it with all references resolved.
+    
+    If val is not a reference, return it as is.
+    &#34;&#34;&#34;
+    if is_reference(val):
+        return resolve_reference(val, graph)
+    else:
+        return val
+
+def search(k, graph):
+    &#34;&#34;&#34;
+    Returns a path in the graph that starts with a root object 
+    and references the passed soul k. [] if non found.
+    &#34;&#34;&#34;
+
+    def dfs(obj):
+        &#34;Returns a path in obj that ends with a reference to k&#34;
+        for key, val in obj.items():
+            # Ignore the primitive values and meta data
+            if key in ignore or not isinstance(val, dict):
+                continue
+
+            if val.get(&#39;#&#39;) == k: # The current value is a reference with the soul k (The one we&#39;re looking for)
+                return [key]
+            else:
+                if is_reference(val): # The dict is a reference
+                    try_child = dfs(graph[val[&#39;#&#39;]]) # Search in the object it references
+                else:
+                    try_child = dfs(val) # Otherwise, search in it directly (This case shouldn&#39;t be handled given the graph conforms to GUN rules)
+                if try_child: # The reference is found in this child
+                    return [key] + try_child # Shift the current key to the path and return it
+        return [] # No child succeded
+    
+    # only root objects is tried
+    for key, val in graph.items():
+        if is_root_soul(key):
+            try_child = dfs(val)
+            if try_child:
+                return [key] + try_child
+    
+    # No soul found :(
+    return []</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gundb.backends.resolvers.filter_root_objects"><code class="name flex">
+<span>def <span class="ident">filter_root_objects</span></span>(<span>graph)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def filter_root_objects(graph):
+    for kroot, rootnode in graph.items():
+        if &#34;://&#34; in kroot:
+            yield kroot, rootnode</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.get_nested_soul_node"><code class="name flex">
+<span>def <span class="ident">get_nested_soul_node</span></span>(<span>s, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_nested_soul_node(s, graph):
+    return graph.get(s, {})</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.is_nested"><code class="name flex">
+<span>def <span class="ident">is_nested</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_nested(s):
+    return not is_root_soul(s)</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.is_reference"><code class="name flex">
+<span>def <span class="ident">is_reference</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a boolean indicating whether the passed argument is reference.</p>
+<p>A reference is a fict in the form {'#': soul}</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_reference(d):
+    &#34;&#34;&#34;
+    Returns a boolean indicating whether the passed argument is reference.
+
+    A reference is a fict in the form {&#39;#&#39;: soul}
+    &#34;&#34;&#34;
+    return isinstance(d, dict) and &#39;#&#39; in d</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.is_root_soul"><code class="name flex">
+<span>def <span class="ident">is_root_soul</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a boolean indicating whether the key s is a root soul.</p>
+<p>Root soul is in the form 'schema://id'</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_root_soul(s):
+    &#34;&#34;&#34;
+    Returns a boolean indicating whether the key s is a root soul.
+
+    Root soul is in the form &#39;schema://id&#39;
+    &#34;&#34;&#34;
+    return &#34;://&#34; in s</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.parse_schema_and_id"><code class="name flex">
+<span>def <span class="ident">parse_schema_and_id</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the schema and id of the passed soul. None, None if doens't match a root soul.</p>
+<p>Root souls is in the form 'schem://id'</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def parse_schema_and_id(s):
+    &#34;&#34;&#34;
+    Returns the schema and id of the passed soul. None, None if doens&#39;t match a root soul.
+
+    Root souls is in the form &#39;schem://id&#39;
+    &#34;&#34;&#34;
+    m = re.match(SCHEME_UID_PAT, s)
+    if m:
+        return m.groupdict()[&#39;schema&#39;], int(m.groupdict()[&#39;id&#39;]) 
+    return None, None</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.resolve_reference"><code class="name flex">
+<span>def <span class="ident">resolve_reference</span></span>(<span>ref, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Resolves a reference in the form {'#': soul} from the given graph.</p>
+<p>Works recursively: All nested references are also resolved</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def resolve_reference(ref, graph):
+    &#34;&#34;&#34;
+    Resolves a reference in the form {&#39;#&#39;: soul} from the given graph.
+
+    Works recursively: All nested references are also resolved
+    &#34;&#34;&#34;
+    assert(is_reference(ref))
+    if not ref[&#39;#&#39;] in graph: # The reference points to a non existent soul
+        #Shouldn&#39;t be reached
+        return {}
+
+    # Shallow copy the object from a graph without its meta data.
+    resolved = graph[ref[&#39;#&#39;]].copy()
+    del resolved[&#39;_&#39;]
+    
+    for k, v in resolved.items():
+        # Resolve reference items
+        if not k in ignore and is_reference(v):
+            resolved[k] = resolve_reference(v, graph)
+    return resolved</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.resolve_v"><code class="name flex">
+<span>def <span class="ident">resolve_v</span></span>(<span>val, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>If val is a reference, return a copy of it with all references resolved.</p>
+<p>If val is not a reference, return it as is.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def resolve_v(val, graph):
+    &#34;&#34;&#34;
+    If val is a reference, return a copy of it with all references resolved.
+    
+    If val is not a reference, return it as is.
+    &#34;&#34;&#34;
+    if is_reference(val):
+        return resolve_reference(val, graph)
+    else:
+        return val</code></pre>
+</details>
+</dd>
+<dt id="gundb.backends.resolvers.search"><code class="name flex">
+<span>def <span class="ident">search</span></span>(<span>k, graph)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a path in the graph that starts with a root object
+and references the passed soul k. [] if non found.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def search(k, graph):
+    &#34;&#34;&#34;
+    Returns a path in the graph that starts with a root object 
+    and references the passed soul k. [] if non found.
+    &#34;&#34;&#34;
+
+    def dfs(obj):
+        &#34;Returns a path in obj that ends with a reference to k&#34;
+        for key, val in obj.items():
+            # Ignore the primitive values and meta data
+            if key in ignore or not isinstance(val, dict):
+                continue
+
+            if val.get(&#39;#&#39;) == k: # The current value is a reference with the soul k (The one we&#39;re looking for)
+                return [key]
+            else:
+                if is_reference(val): # The dict is a reference
+                    try_child = dfs(graph[val[&#39;#&#39;]]) # Search in the object it references
+                else:
+                    try_child = dfs(val) # Otherwise, search in it directly (This case shouldn&#39;t be handled given the graph conforms to GUN rules)
+                if try_child: # The reference is found in this child
+                    return [key] + try_child # Shift the current key to the path and return it
+        return [] # No child succeded
+    
+    # only root objects is tried
+    for key, val in graph.items():
+        if is_root_soul(key):
+            try_child = dfs(val)
+            if try_child:
+                return [key] + try_child
+    
+    # No soul found :(
+    return []</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gundb.backends" href="index.html">gundb.backends</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gundb.backends.resolvers.filter_root_objects" href="#gundb.backends.resolvers.filter_root_objects">filter_root_objects</a></code></li>
+<li><code><a title="gundb.backends.resolvers.get_nested_soul_node" href="#gundb.backends.resolvers.get_nested_soul_node">get_nested_soul_node</a></code></li>
+<li><code><a title="gundb.backends.resolvers.is_nested" href="#gundb.backends.resolvers.is_nested">is_nested</a></code></li>
+<li><code><a title="gundb.backends.resolvers.is_reference" href="#gundb.backends.resolvers.is_reference">is_reference</a></code></li>
+<li><code><a title="gundb.backends.resolvers.is_root_soul" href="#gundb.backends.resolvers.is_root_soul">is_root_soul</a></code></li>
+<li><code><a title="gundb.backends.resolvers.parse_schema_and_id" href="#gundb.backends.resolvers.parse_schema_and_id">parse_schema_and_id</a></code></li>
+<li><code><a title="gundb.backends.resolvers.resolve_reference" href="#gundb.backends.resolvers.resolve_reference">resolve_reference</a></code></li>
+<li><code><a title="gundb.backends.resolvers.resolve_v" href="#gundb.backends.resolvers.resolve_v">resolve_v</a></code></li>
+<li><code><a title="gundb.backends.resolvers.search" href="#gundb.backends.resolvers.search">search</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
