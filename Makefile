@@ -1,6 +1,9 @@
 run: 
 	gunicorn -k flask_sockets.worker app:app
 
+doc:
+	python3 -m pdoc gundb --html --output-dir docs/api --force
+
 rungevent:
 	python3 geventapp.py
 
