@@ -24,6 +24,21 @@ class BackendMixin:
         pass
     
     def put(self, soul, key, value, state, graph):
+        """
+        Handles a put request.
+        Reflect the update graph[soul][key] = value in the database.
+        First, it finds the root object to which the soul belongs, \
+                then depending if a list is involved in the path from the root to the changed property, \
+                update_normal or update_list is called.
+
+        Args:
+            soul  (str) : The soul in which the property will be changed.
+            key   (str) : The key that will be changed.
+            value       : The new value associated with the key.
+            state (dict): The state.
+            graph (dict): The updated GUN graph.
+        """
+
         logging.debug("\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n".format(soul, key, value, json.dumps(graph, indent = 4)))
         if soul not in self.db:
             self.db[soul] = {METADATA:{STATE:{}}}
@@ -79,6 +94,12 @@ class BackendMixin:
 
 
     def update_list(self, root, path, soul, root_object, schema, index, graph):
+        """
+        Update list property.
+        
+        Walks through the graph first to retrieve the soul of the list, \
+            Then updates the list in the db by resolving it first from the graph.
+        """
         current = graph[root]
         for e in path[:-1]:
             current = graph[current[e][METADATA][SOUL]]
@@ -88,6 +109,16 @@ class BackendMixin:
         return 0
 
     def update_normal(self, path, value, root_object, schema, index):
+        """
+        Update a normal property.
+
+        Args:
+            path        (list): The keys to follow from root_object to reach the desired path.
+            value             : The value to be stored in this location.
+            root_object (dict): The root object from GUN graph.
+            schema      (str) : The schema of the root soul. Root soul is in the format schema://index
+            index       (str) : The index of the root soul.
+        """
         key = path[-1]
         if key.startswith('list_'):
             value = listify(value)
