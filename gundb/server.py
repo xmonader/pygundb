@@ -99,14 +99,10 @@ def gun(ws):
                 #print("\n\n\n received {} \n\n\n".format(msg))
                 if not isinstance(msg, list):
                     msg = [msg]
-                # import ipdb; ipdb.set_trace()
                 rec_dd = lambda: defaultdict(rec_dd)
                 overalldiff = defaultdict(rec_dd)
                 for payload in msg:
 
-                    #log = logging.getLogger()
-                    #log.removeHandler(log.handlers[0])
-                    #log.addHandler(logging.FileHandler('app' + str(putid) + '.log', 'w+'))
                     # print("payload: {}\n\n".format(payload))
                     if isinstance(payload, str):
                         payload = json.loads(payload)
@@ -153,6 +149,13 @@ def gun(ws):
 
 
 def push_diffs(diff, graph):
+    """
+    Apply diff to reflect the changes in graph into the database.
+
+    Diff are divided into reference updates and value updates.
+    
+    Reference updates are applied first then value updates.
+    """
     ref_diff = defaultdict(defaultdict)
     val_diff = defaultdict(defaultdict)
 
