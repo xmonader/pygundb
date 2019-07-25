@@ -79,8 +79,18 @@
         })
 
       }
+			let nesetedListTest = () => {
+				gun.get("proj.programmar://8").get("list_langs").set({
+					"name": "python",
+					"list_releases": {
+					"0": "3.6",
+					"1": "3.7"
+					}
+				})
+      }
       basicTest()
       midTest()
       advTest()
+			nesetedListTest()
       console.log("here now..")
     </script>
