@@ -66,7 +66,7 @@ class BackendMixin:
             root = path[0]
             path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
-        root_object = self.get_object_by_id(index, schema)
+        root_object = defaultify(self.get_object_by_id(index, schema))
         value = fix_lists(resolve_v(value, graph))
         list_index = get_first_list_prop(path)
         if list_index != -1:
