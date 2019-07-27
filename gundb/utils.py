@@ -1,4 +1,5 @@
 import time
+import math
 import uuid
 from .consts import STATE, METADATA, SOUL
 
@@ -127,3 +128,27 @@ def lex_from_graph(lex, db):
     ack[soul] = node
 
     return ack
+
+
+def stategen():
+    N = 0
+    D = 1000
+    STATE_DRIFT = 0
+
+    last = -math.inf
+
+    while True:
+        t = time.time()
+        if last < t:
+            N = 0
+            last = t + STATE_DRIFT
+        else:
+            N + 1
+            last = t + (N/D)  + STATE_DRIFT 
+        yield last
+
+
+
+state = stategen()
+def get_current_state():
+    return next(state)
