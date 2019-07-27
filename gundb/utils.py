@@ -3,6 +3,28 @@ import math
 import uuid
 from .consts import STATE, METADATA, SOUL
 
+
+def stategen():
+    N = 0
+    D = 1000
+    STATE_DRIFT = 0
+
+    last = -math.inf
+
+    while True:
+        t = time.time()
+        if last < t:
+            N = 0
+            last = t + STATE_DRIFT
+        else:
+            N + 1
+            last = t + (N/D)  + STATE_DRIFT 
+        yield last
+
+state = stategen()
+def get_current_state():
+    return next(state)
+
 def newuid():
     return str(uuid.uuid4())
 
@@ -13,17 +35,17 @@ def get_state(node):
 
 def get_state_of(node, key):
     s = get_state(node)
-    return s.get(key, 0) #FIXME: should be 0?
+    return s.get(key, get_current_state()) #FIXME: should be 0?
 
 def new_node(name, **kwargs):
     # node with meta
-    node = {METADATA: {SOUL:name, STATE:{k:0 for k in kwargs}}, **kwargs}
+    node = {METADATA: {SOUL:name, STATE:{k:get_current_state() for k in kwargs}}, **kwargs}
     return node
 
 def ensure_state(node):
 
     if STATE not in node[METADATA]:
-        node[METADATA][STATE] = {k: 0 for k in node if k != SOUL}
+        node[METADATA][STATE] = {k: get_current_state() for k in node if k != SOUL}
         node[METADATA][SOUL] = node["#"]
     return node
 
@@ -129,26 +151,3 @@ def lex_from_graph(lex, db):
 
     return ack
 
-
-def stategen():
-    N = 0
-    D = 1000
-    STATE_DRIFT = 0
-
-    last = -math.inf
-
-    while True:
-        t = time.time()
-        if last < t:
-            N = 0
-            last = t + STATE_DRIFT
-        else:
-            N + 1
-            last = t + (N/D)  + STATE_DRIFT 
-        yield last
-
-
-
-state = stategen()
-def get_current_state():
-    return next(state)
