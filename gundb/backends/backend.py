@@ -121,7 +121,7 @@ class BackendMixin:
         """
         key = path[-1]
         if key.startswith('list_'):
-            value = listify(value)
+            value = eliminate_nones(listify(value))
         current = root_object
         for e in path[:-1]:
             try:
