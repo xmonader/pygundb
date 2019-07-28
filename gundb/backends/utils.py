@@ -43,3 +43,5 @@ def defaultify(d):
             res[k] = v
     return res
 
+def eliminate_nones(lst):
+    return [x for x in lst if x is not None]
