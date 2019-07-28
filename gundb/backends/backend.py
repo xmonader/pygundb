@@ -31,6 +31,8 @@ class BackendMixin:
                 then depending if a list is involved in the path from the root to the changed property, \
                 update_normal or update_list is called.
 
+        List removal is converted to a put request that modifies the associated value to None. It's eliminated by the function eliminate_nones.
+        
         Args:
             soul  (str) : The soul in which the property will be changed.
             key   (str) : The key that will be changed.
@@ -121,7 +123,7 @@ class BackendMixin:
         """
         key = path[-1]
         if key.startswith('list_'):
-            value = eliminate_nones(listify(value))
+            value = eliminate_nones(listify(value)) # Extract the list from value.keys() and eliminate None values.
         current = root_object
         for e in path[:-1]:
             try:
