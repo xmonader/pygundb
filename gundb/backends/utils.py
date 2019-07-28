@@ -1,6 +1,9 @@
 from collections import defaultdict
 
 def uniquify(lst):
+    """
+    Return a list of unique items from lst.
+    """
     res = []
     for item in lst:
         if not item in res:
@@ -8,6 +11,10 @@ def uniquify(lst):
     return res
 
 def fix_lists(obj):
+    """
+    If obj is of any type other than dict, return it as is.
+    Otherwise, recursively convert each entry whose key starts with list_ into a list of unique values extracted from v.values()
+    """
     if not isinstance(obj, dict):
         return obj
     res = {}
@@ -19,12 +26,22 @@ def fix_lists(obj):
     return res
 
 def listify(attr):
+    """
+    If attr is a dict return its values as a list after eliminating duplicates in it.
+    Otherwise, return its value as is.
+    """
     if isinstance(attr, dict):
         return uniquify(fix_lists(attr).values())
     else:
         return attr
 
 def get_first_list_prop(lst):
+    """
+    Returns the first element in the list that starts with list_, -1 if not found.
+
+    Arguments:
+        lst {list}
+    """
     for i, e in enumerate(lst):
         if e.startswith('list_'):
             return i
@@ -44,4 +61,5 @@ def defaultify(d):
     return res
 
 def eliminate_nones(lst):
+    "Removes all Nonees in the given list"
     return [x for x in lst if x is not None]
