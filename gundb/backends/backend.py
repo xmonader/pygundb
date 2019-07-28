@@ -129,8 +129,8 @@ class BackendMixin:
         current = root_object
         for e in path[:-1]:
             try:
-                if not e in current:
-                    current[e] = {}
+                if not hasattr(current, e):
+                    setattr(current, type(current)())
                 current = getattr(current, e)
             except:# The path doesn't exist in the db
                 # Ignore the request
