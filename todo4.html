@@ -76,18 +76,25 @@ let basicTest = () => {
 
   }
   let nesetedListTest = () => {
-    // gun.get("proj.programmar://8").get("list_langs").set({
-    //     "name": "python",
-    //     "list_releases": {
-    //     "0": "3.6",
-    //     "1": "3.7"
-    //     }
-    // })
+     gun.get("proj.programmar://8").get("list_langs").set({
+         "name": "python",
+         "list_releases": {
+         "0": "3.6",
+         "1": "3.7"
+         }
+     })
   }
+  let unsetObjTest = () => {
+					let football = gun.get("footbal").put({name: 'football'})
+					let tennis = gun.get("tennis").put({name: 'tennis'})
+  	gun.get("proj.programmar://9").get("list_hobbies").set(football);
+  	gun.get("proj.programmar://9").get("list_hobbies").set(tennis);
+  	gun.get("proj.programmar://9").get("list_hobbies").unset(tennis);
+	}
 //   for (let x=0; x < 5; x++){
-    basicTest()
-    midTest()
-    advTest()
-    nesetedListTest()
-
+    //basicTest()
+    //midTest()
+   // advTest()
+    //nesetedListTest()
+	unsetObjTest()
 </script>
