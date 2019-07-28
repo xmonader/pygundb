@@ -4,6 +4,7 @@ from ..consts import *
 from .resolvers import *
 from .utils import *
 import logging
+from attributedict.collections import AttributeDict
 
 #def uniquify(lst):
 #    #lst might be a list of objects
@@ -68,7 +69,9 @@ class BackendMixin:
             root = path[0]
             path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
-        root_object = defaultify(self.get_object_by_id(index, schema))
+        root_object = self.get_object_by_id(index, schema)
+        if isinstance(root_object, dict):
+            root_object = AttributeDict(root_object)
         value = fix_lists(resolve_v(value, graph))
         list_index = get_first_list_prop(path)
         if list_index != -1:
@@ -77,7 +80,6 @@ class BackendMixin:
             self.update_normal(path, value, root_object, schema, index)
         logging.debug("Updated successfully!")
         
-
         self.save_object(root_object, index, schema)
 
     def get(self, soul, key=None):
@@ -127,7 +129,9 @@ class BackendMixin:
         current = root_object
         for e in path[:-1]:
             try:
-                current = current[e]
+                if not e in current:
+                    current[e] = {}
+                current = getattr(current, e)
             except:# The path doesn't exist in the db
                 # Ignore the request
                 logging.debug("Couldn't traverse the database for the found path.")
