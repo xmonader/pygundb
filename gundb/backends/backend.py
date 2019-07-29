@@ -106,7 +106,7 @@ class BackendMixin:
         """
         current = graph[root]
         for e in path[:-1]:
-            current = graph[current[e][METADATA][SOUL]]
+            current = graph[current[e][SOUL]]
 
         list_id = current[path[-1]][SOUL]
         self.update_normal(path, resolve_v({SOUL: list_id}, graph), root_object, schema, index)
