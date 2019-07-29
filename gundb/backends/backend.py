@@ -72,7 +72,7 @@ class BackendMixin:
         root_object = self.get_object_by_id(index, schema)
         if isinstance(root_object, dict):
             root_object = AttributeDict(root_object)
-        value = fix_lists(resolve_v(value, graph))
+        value = resolve_v(value, graph)
         list_index = get_first_list_prop(path)
         if list_index != -1:
             self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
@@ -109,7 +109,7 @@ class BackendMixin:
             current = graph[current[e][METADATA][SOUL]]
 
         list_id = current[path[-1]][SOUL]
-        self.update_normal(path, fix_lists(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
+        self.update_normal(path, resolve_v({SOUL: list_id}, graph), root_object, schema, index)
         return 0
 
     def update_normal(self, path, value, root_object, schema, index):
@@ -125,12 +125,18 @@ class BackendMixin:
         """
         key = path[-1]
         if key.startswith('list_'):
-            value = eliminate_nones(listify(value)) # Extract the list from value.keys() and eliminate None values.
+            assert(isinstance(value, dict))
+            value = self.convert_list_to_db_form(type(root_object), value) # Extract the list from value.keys() and eliminate None values.
+        elif isinstance(value, dict):
+            value = self.convert_obj_to_db_form(type(root_object), value)
+        
         current = root_object
         for e in path[:-1]:
             try:
+
                 if not hasattr(current, e):
-                    setattr(current, type(current)())
+                    setattr(current, e, type(root_object)())
+
                 current = getattr(current, e)
             except:# The path doesn't exist in the db
                 # Ignore the request
@@ -143,4 +149,30 @@ class BackendMixin:
 
                 #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
-        current[path[-1]] = value
+        setattr(current, path[-1], value)
+    
+    def convert_children_to_db_form(self, db_type, value):
+        assert(isinstance(value, dict))
+        for k, v in value.items():
+            if k.startswith("list_"):
+                assert(isinstance(v, dict))
+                value[k] = self.convert_list_to_db_form(db_type, v)
+            elif isinstance(v, dict):
+                value[k] = self.convert_obj_to_db_form(db_type, v)
+            else:
+                value[k] = v
+        return value
+
+    def convert_obj_to_db_form(self, db_type, value):
+        assert(isinstance(value, dict))
+        obj = db_type()
+        converted_children = self.convert_children_to_db_form(db_type, value)
+        for k, v in converted_children.items():
+                setattr(obj, k, v)
+        return obj
+
+    def convert_list_to_db_form(self, db_type, value):
+        assert(isinstance(value, dict))
+        lst = []
+        converted = self.convert_children_to_db_form(db_type, value)
+        return eliminate_nones(uniquify(converted.values()))
