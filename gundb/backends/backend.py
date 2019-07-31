@@ -106,10 +106,10 @@ class BackendMixin:
         """
         current = graph[root]
         for e in path[:-1]:
-            current = graph[current[e][METADATA][SOUL]]
+            current = graph[current[e][SOUL]]
 
         list_id = current[path[-1]][SOUL]
-        self.update_normal(path, resolve_v({SOUL: list_id}, graph), root_object, schema, index)
+        self.update_normal(path, listify(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
         return 0
 
     def update_normal(self, path, value, root_object, schema, index):
@@ -123,12 +123,6 @@ class BackendMixin:
             schema      (str) : The schema of the root soul. Root soul is in the format schema://index
             index       (str) : The index of the root soul.
         """
-        key = path[-1]
-        if key.startswith('list_'):
-            assert(isinstance(value, dict))
-            value = self.convert_list_to_db_form(type(root_object), value) # Extract the list from value.keys() and eliminate None values.
-        elif isinstance(value, dict):
-            value = self.convert_obj_to_db_form(type(root_object), value)
         
         current = root_object
         for e in path[:-1]:
@@ -149,30 +143,5 @@ class BackendMixin:
 
                 #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
+        #import ipdb;ipdb.set_trace()
         setattr(current, path[-1], value)
-    
-    def convert_children_to_db_form(self, db_type, value):
-        assert(isinstance(value, dict))
-        for k, v in value.items():
-            if k.startswith("list_"):
-                assert(isinstance(v, dict))
-                value[k] = self.convert_list_to_db_form(db_type, v)
-            elif isinstance(v, dict):
-                value[k] = self.convert_obj_to_db_form(db_type, v)
-            else:
-                value[k] = v
-        return value
-
-    def convert_obj_to_db_form(self, db_type, value):
-        assert(isinstance(value, dict))
-        obj = db_type()
-        converted_children = self.convert_children_to_db_form(db_type, value)
-        for k, v in converted_children.items():
-                setattr(obj, k, v)
-        return obj
-
-    def convert_list_to_db_form(self, db_type, value):
-        assert(isinstance(value, dict))
-        lst = []
-        converted = self.convert_children_to_db_form(db_type, value)
-        return eliminate_nones(uniquify(converted.values()))
