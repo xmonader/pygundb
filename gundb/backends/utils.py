@@ -31,7 +31,7 @@ def listify(attr):
     Otherwise, return its value as is.
     """
     if isinstance(attr, dict):
-        return uniquify(fix_lists(attr).values())
+        return eliminate_nones(uniquify(fix_lists(attr).values()))
     else:
         return attr
 
@@ -52,7 +52,7 @@ rec_dd = lambda: defaultdict(rec_dd)
 def defaultify(d):
     "Converts a dict to a nested default dicts"
     res = defaultdict(rec_dd)
-
+    print("defaultifying d {} ".format(d))
     for k, v in d.items():
         if isinstance(v, dict):
             res[k] = defaultify(v)
