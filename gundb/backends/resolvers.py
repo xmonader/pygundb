@@ -64,7 +64,6 @@ def resolve_reference(ref, graph):
 
     # Shallow copy the object from a graph without its meta data.
     resolved = graph[ref['#']].copy()
-    del resolved['_']
     
     for k, v in resolved.items():
         # Resolve reference items
@@ -75,7 +74,7 @@ def resolve_reference(ref, graph):
 def resolve_v(val, graph):
     """
     If val is a reference, return a copy of it with all references resolved.
-    
+
     If val is not a reference, return it as is.
     """
     if is_reference(val):
