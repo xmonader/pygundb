@@ -24,6 +24,9 @@ class BackendMixin:
     def save_object(self, obj, obj_id, schema=None):
         pass
     
+    def recover_graph(self):
+        pass
+    
     def put(self, soul, key, value, state, graph):
         """
         Handles a put request.
@@ -69,9 +72,10 @@ class BackendMixin:
             root = path[0]
             path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
-        #root_object = self.get_object_by_id(index, schema)
         root_object = resolve_v({SOUL: root}, graph)
         self.save_object(defaultify(root_object), index, schema)
+        print("RECOVERD GRAPH: {}".format(json.dumps(self.recover_graph(), indent=4)))
+
 
     def get(self, soul, key=None):
         ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
