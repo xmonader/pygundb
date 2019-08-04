@@ -1,6 +1,6 @@
 from collections import defaultdict
 from .backend import BackendMixin
-from .utils import defaultify, fix_lists
+from .utils import defaultify, fix_lists, desolve
 from ..consts import METADATA, SOUL, STATE
 import json
 ignore = '_'
@@ -57,7 +57,39 @@ class RedisKV(BackendMixin):
             mapping[k] = i
             result.append(list_obj[k])
         return mapping, result
-     
+
+    def recover_graph(self):
+        root_souls = self.redis.keys(pattern="*://*")
+        graph = {}
+        for root_soul in root_souls:
+            decoded = root_soul.decode('utf-8')
+            graph[decoded] = self.recover_obj(decoded)    
+        return desolve(graph)
+
+    def recover_obj(self, key):
+        db_form = defaultify(json.loads(self.redis.get(key)))
+        return self.convert_to_graph(db_form)
+    
+    def convert_to_graph(self, obj):
+        if not isinstance(obj, dict):
+            return obj
+        result = defaultify({})
+        obj = self.eliminate_lists(obj)
+        for k, v in obj.items():
+            result[k] = self.convert_to_graph(v)
+        return result
+
+    def eliminate_lists(self, obj):
+        if METADATA not in obj or LISTDATA not in obj[METADATA]:
+            return obj
+        for k, v in obj[METADATA][LISTDATA].items():
+            recovered_list = {METADATA: v[METADATA]}
+            for orig_key, i in v[MAPPING].items():
+                recovered_list[orig_key] = obj[k][i]
+            obj[k] = recovered_list
+        del obj[METADATA][LISTDATA]
+        return obj
+
     def __setitem__(self, k, v):
         self.db[k] = v
 
