@@ -26,7 +26,7 @@ class BackendMixin:
     
     def recover_graph(self):
         pass
-    
+
     def put(self, soul, key, value, state, graph):
         """
         Handles a put request.
@@ -91,52 +91,56 @@ class BackendMixin:
                 return res
         return ret
 
+    def delegate_list_metadatata(self, obj):
+        if not isinstance(obj, dict):
+            return obj
+        for k, v in obj.items():
+            if k == METADATA:
+                continue
+            if k.startswith("list_"):
+                obj[k] = self.delegate_list_metadatata(v)
+                obj[METADATA][LISTDATA][k][METADATA] = v[METADATA]
+                mapping, result_list = self.extract_mapping_list(obj[k])
+                obj[METADATA][LISTDATA][k][MAPPING] = mapping
+                obj[k] = result_list
+            else:
+                obj[k] = self.delegate_list_metadatata(v)
+        return obj
 
-    def update_list(self, root, path, soul, root_object, schema, index, graph):
-        """
-        Update list property.
-        
-        Walks through the graph first to retrieve the soul of the list, \
-            Then updates the list in the db by resolving it first from the graph.
-        """
-        current = graph[root]
-        for e in path[:-1]:
-            current = graph[current[e][SOUL]]
+    def extract_mapping_list(self, list_obj):
+        mapping = {}
+        result = []
+        del list_obj[METADATA]
+        number_of_nones = 0
+        for i, k in enumerate(list_obj.keys()):
+            index = result.index(list_obj[k]) if list_obj[k] in result else -1
+            if list_obj[k] == None:
+                number_of_nones += 1
+                mapping[k] = -1
+            elif index != -1:
+                mapping[k] = index
+            else:
+                mapping[k] = i - number_of_nones
+                result.append(list_obj[k])
+        return mapping, result
 
-        list_id = current[path[-1]][SOUL]
-        self.update_normal(path, listify(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
-        return 0
+    def convert_to_graph(self, obj):
+        if not isinstance(obj, dict):
+            return obj
+        result = defaultify({})
+        obj = self.eliminate_lists(obj)
+        for k, v in obj.items():
+            result[k] = self.convert_to_graph(v)
+        return result
 
-    def update_normal(self, path, value, root_object, schema, index):
-        """
-        Update a normal property.
-
-        Args:
-            path        (list): The keys to follow from root_object to reach the desired path.
-            value             : The value to be stored in this location.
-            root_object (dict): The root object from GUN graph.
-            schema      (str) : The schema of the root soul. Root soul is in the format schema://index
-            index       (str) : The index of the root soul.
-        """
-        
-        current = root_object
-        for e in path[:-1]:
-            try:
-
-                if not hasattr(current, e):
-                    setattr(current, e, type(root_object)())
-
-                current = getattr(current, e)
-            except:# The path doesn't exist in the db
-                # Ignore the request
-                logging.debug("Couldn't traverse the database for the found path.")
-                try:
-                    logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
-                except:
-                    # in case of current is dict with ObjectId from mongo
-                    logging.debug('path: {}\n\n'.format([current] + path))
-
-                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
-                return 0
-        #import ipdb;ipdb.set_trace()
-        setattr(current, path[-1], value)
+    def eliminate_lists(self, obj):
+        if METADATA not in obj or LISTDATA not in obj[METADATA]:
+            return obj
+        for k, v in obj[METADATA][LISTDATA].items():
+            recovered_list = {METADATA: v[METADATA]}
+            for orig_key, i in v[MAPPING].items():
+                if i != -1:
+                    recovered_list[orig_key] = obj[k][i]
+            obj[k] = recovered_list
+        del obj[METADATA][LISTDATA]
+        return obj
