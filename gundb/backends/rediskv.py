@@ -30,7 +30,6 @@ class RedisKV(BackendMixin):
     def save_object(self, obj, obj_id, schema=None):
         full_id = format_object_id(schema, obj_id)
         obj = self.delegate_list_metadatata(obj)
-
         self.redis.set(full_id, json.dumps(obj))
 
     def delegate_list_metadatata(self, obj):
@@ -53,9 +52,14 @@ class RedisKV(BackendMixin):
         mapping = {}
         result = []
         del list_obj[METADATA]
+        number_of_nones = 0
         for i, k in enumerate(list_obj.keys()):
-            mapping[k] = i
-            result.append(list_obj[k])
+            if list_obj[k] == None:
+                number_of_nones += 1
+                mapping[k] = -1
+            else:
+                mapping[k] = i - number_of_nones
+                result.append(list_obj[k])
         return mapping, result
 
     def recover_graph(self):
@@ -85,7 +89,8 @@ class RedisKV(BackendMixin):
         for k, v in obj[METADATA][LISTDATA].items():
             recovered_list = {METADATA: v[METADATA]}
             for orig_key, i in v[MAPPING].items():
-                recovered_list[orig_key] = obj[k][i]
+                if i != -1:
+                    recovered_list[orig_key] = obj[k][i]
             obj[k] = recovered_list
         del obj[METADATA][LISTDATA]
         return obj
