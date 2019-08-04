@@ -94,6 +94,8 @@ def gun(ws):
     logging.getLogger("").addHandler(console)
 
     global peers, graph
+    if graph == {}:
+        graph = app.backend.recover_graph()
     peers.append(ws)
     try:
         while not ws.closed:
