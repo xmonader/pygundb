@@ -69,18 +69,9 @@ class BackendMixin:
             root = path[0]
             path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
-        root_object = self.get_object_by_id(index, schema)
-        if isinstance(root_object, dict):
-            root_object = AttributeDict(root_object)
-        value = resolve_v(value, graph)
-        list_index = get_first_list_prop(path)
-        if list_index != -1:
-            self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
-        else:
-            self.update_normal(path, value, root_object, schema, index)
-        logging.debug("Updated successfully!")
-        
-        self.save_object(root_object, index, schema)
+        #root_object = self.get_object_by_id(index, schema)
+        root_object = resolve_v({SOUL: root}, graph)
+        self.save_object(defaultify(root_object), index, schema)
 
     def get(self, soul, key=None):
         ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
