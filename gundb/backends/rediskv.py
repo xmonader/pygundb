@@ -54,9 +54,12 @@ class RedisKV(BackendMixin):
         del list_obj[METADATA]
         number_of_nones = 0
         for i, k in enumerate(list_obj.keys()):
+            index = result.index(list_obj[k]) if list_obj[k] in result else -1
             if list_obj[k] == None:
                 number_of_nones += 1
                 mapping[k] = -1
+            elif index != -1:
+                mapping[k] = index
             else:
                 mapping[k] = i - number_of_nones
                 result.append(list_obj[k])
