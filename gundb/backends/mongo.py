@@ -1,6 +1,7 @@
 from collections import defaultdict
 from .backend import BackendMixin
-from .utils import defaultify, desolve
+from .utils import defaultify
+from .resolvers import desolve
 
 
 class cuteobj:

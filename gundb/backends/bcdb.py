@@ -2,7 +2,8 @@ import re
 import json
 from ..consts import *
 from .backend import BackendMixin
-from .utils import defaultify, desolve
+from .utils import defaultify
+from .resolvers import desolve
 import Jumpscale
 from Jumpscale import j
 from collections import defaultdict

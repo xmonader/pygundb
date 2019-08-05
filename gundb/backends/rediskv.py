@@ -1,6 +1,7 @@
 from collections import defaultdict
 from .backend import BackendMixin
-from .utils import defaultify, fix_lists, desolve
+from .utils import defaultify, fix_lists
+from .resolvers import desolve
 from ..consts import METADATA, SOUL, STATE
 import json
 ignore = '_'

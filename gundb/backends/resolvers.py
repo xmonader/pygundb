@@ -6,8 +6,10 @@
     
     3. Helper function to fetch data from keys and decide its type.
 """
-
+from .utils import defaultify
+from ..consts import METADATA, SOUL
 import re
+
 
 SCHEME_UID_PAT = "(?P<schema>.+?)://(?P<id>.+)"
 
@@ -116,3 +118,34 @@ def search(k, graph):
     
     # No soul found :(
     return []
+
+
+def desolve_obj(obj):
+    """Returns the given object in gundb form along with the souls it created"""
+    result = defaultify({})
+    added_souls = defaultify({})
+    for k, v in obj.items():
+        if k != METADATA and isinstance(v, dict):
+            prop_soul = v[METADATA][SOUL]
+            result[k] = defaultify({SOUL: prop_soul})
+            desolved_prop, added_in_prop = desolve_obj(v)
+            added_souls[prop_soul] = desolved_prop
+            for k, v in added_in_prop.items():
+                added_souls[k] = v
+        else:
+            result[k] = v
+    return result, added_souls
+
+
+def desolve(graph):
+    """resolve a graph in expanded form and convert it to gundb form"""   
+    result = defaultify({})
+    added_souls = defaultify({})
+    for k, v in graph.items():
+        prop_soul = v[METADATA][SOUL]
+        result[prop_soul], added_souls_in_obj = desolve_obj(v)
+        for k, v in added_souls_in_obj.items():
+            added_souls[k] = v
+    for k, v in added_souls.items():
+        result[k] = v
+    return result
