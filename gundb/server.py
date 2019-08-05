@@ -8,7 +8,7 @@ from .backends import *
 from .backends.resolvers import is_root_soul, is_reference
 from .backends.graph import Graph
 import redis
-import time 
+import time
 import uuid
 import sys
 import traceback
@@ -38,6 +38,11 @@ elif backend_db == "pickle":
     app.backend = Pickle()
 elif backend_db == "udb":
     app.backend = UDB()
+elif backend_db == "bcdb":
+    try:
+        from jumpscale import j
+    except:
+        app.backend = RedisKV()
 
 sockets = Sockets(app)
 
@@ -48,7 +53,7 @@ def send_public(path):
     return send_from_directory('static' + '/' + path)
 
 peers = []
-graph = {} 
+graph = {}
 trackedids = []
 
 def trackid(id_):
@@ -74,7 +79,7 @@ def loggraph(graph):
     #     print("\n\t\tNode: ", node)
     #     for k, v in node.items():
     #         print("\n\t\t{} => {}".format(k, v))
-    
+
     # print("TRACKED: ", trackedids, " #", len(trackedids))
     # print("\n\nBACKEND: ", app.backend.list())
 
@@ -85,7 +90,7 @@ def gun(ws):
     putid = 0
     while os.path.exists('logs/app' + str(putid) + '.log'):
         putid += 1
-    logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)                
+    logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
     # set a format which is simpler for console use
@@ -94,10 +99,14 @@ def gun(ws):
     logging.getLogger("").addHandler(console)
 
     global peers, graph
+    if graph == {}:
+        graph = app.backend.recover_graph()
+        if graph == None:
+            graph = {}
     peers.append(ws)
     try:
         while not ws.closed:
-            msgstr = ws.receive() 
+            msgstr = ws.receive()
             resp = {'ok':True}
             if msgstr is not None:
                 msg = json.loads(msgstr)
@@ -134,7 +143,7 @@ def gun(ws):
                                 overalldiff[soul][k] = v
 
 
-                        
+
                     elif 'get' in payload:
                         uid = trackid(str(uuid.uuid4()))
                         get = payload['get']
@@ -142,7 +151,7 @@ def gun(ws):
                         ack = lex_from_graph(get, app.backend)
                         loggraph(graph)
                         resp = {'put': ack, '@':msgid, '#':uid, 'ok':True}
-                push_diffs(overalldiff, graph)                
+                push_diffs(overalldiff, graph)
                 emit(resp)
                 #print("\n\n sending resp {}\n\n".format(resp))
                 emit(msg)
@@ -158,9 +167,9 @@ def push_diffs(diff, graph):
     Apply diff to reflect the changes in graph into the database.
 
     Diff are divided into reference updates and value updates.
-    
+
     Reference updates are applied first then value updates.
-    
+
     NOTE: Reference update shouldn't be applied as it will remove unmentioned properties in the new graph.
           Instead it shoul be ignored completely. And any value update inside it will create it for free.
     """
@@ -176,9 +185,9 @@ def push_diffs(diff, graph):
                 ref_diff[soul][k] = v
             else:
                 val_diff[soul][k] = v
-    
+
     #Graph(graph).process_ref_diffs(ref_diff, app.backend.put)
-     
+
     for soul, node in val_diff.items():
         for k, v in node.items():
             if k == METADATA or is_root_soul(k):

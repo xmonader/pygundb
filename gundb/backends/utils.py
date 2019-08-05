@@ -1,4 +1,6 @@
 from collections import defaultdict
+from ..consts import METADATA, SOUL
+
 
 def uniquify(lst):
     """
@@ -9,6 +11,7 @@ def uniquify(lst):
         if not item in res:
             res.append(item)
     return res
+
 
 def fix_lists(obj):
     """
@@ -25,6 +28,7 @@ def fix_lists(obj):
             res[k] = fix_lists(v)
     return res
 
+
 def listify(attr):
     """
     If attr is a dict return its values as a list after eliminating duplicates in it.
@@ -34,6 +38,7 @@ def listify(attr):
         return eliminate_nones(uniquify(fix_lists(attr).values()))
     else:
         return attr
+
 
 def get_first_list_prop(lst):
     """
@@ -47,18 +52,20 @@ def get_first_list_prop(lst):
             return i
     return -1
 
+
 rec_dd = lambda: defaultdict(rec_dd)
+
 
 def defaultify(d):
     "Converts a dict to a nested default dicts"
     res = defaultdict(rec_dd)
-    print("defaultifying d {} ".format(d))
     for k, v in d.items():
         if isinstance(v, dict):
             res[k] = defaultify(v)
         else:
             res[k] = v
     return res
+
 
 def eliminate_nones(lst):
     "Removes all Nonees in the given list"

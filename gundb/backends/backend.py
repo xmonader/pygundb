@@ -24,6 +24,9 @@ class BackendMixin:
     def save_object(self, obj, obj_id, schema=None):
         pass
     
+    def recover_graph(self):
+        pass
+
     def put(self, soul, key, value, state, graph):
         """
         Handles a put request.
@@ -69,18 +72,10 @@ class BackendMixin:
             root = path[0]
             path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
-        root_object = self.get_object_by_id(index, schema)
-        if isinstance(root_object, dict):
-            root_object = AttributeDict(root_object)
-        value = resolve_v(value, graph)
-        list_index = get_first_list_prop(path)
-        if list_index != -1:
-            self.update_list(root, path[:list_index + 1], soul, root_object, schema, index, graph)
-        else:
-            self.update_normal(path, value, root_object, schema, index)
-        logging.debug("Updated successfully!")
-        
-        self.save_object(root_object, index, schema)
+        root_object = resolve_v({SOUL: root}, graph)
+        self.save_object(defaultify(root_object), index, schema)
+        print("RECOVERD GRAPH: {}".format(json.dumps(self.recover_graph(), indent=4)))
+
 
     def get(self, soul, key=None):
         ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
@@ -96,52 +91,60 @@ class BackendMixin:
                 return res
         return ret
 
+    def delegate_list_metadatata(self, obj):
+        if not isinstance(obj, dict):
+            return obj
+        result = defaultify({})
+        for k, v in obj.items():
+            if k.startswith("list_"):
+                result[k] = self.delegate_list_metadatata(v)
+                result[METADATA][LISTDATA][k][METADATA] = v[METADATA]
+                mapping, result_list = self.extract_mapping_list(obj[k])
+                result[METADATA][LISTDATA][k][MAPPING] = mapping
+                result[k] = result_list
+            elif k == METADATA:
+                result[k] = v
+            else:
+                result[k] = self.delegate_list_metadatata(v)
+        return result
 
-    def update_list(self, root, path, soul, root_object, schema, index, graph):
-        """
-        Update list property.
+    def extract_mapping_list(self, list_obj):
+        mapping = defaultify({})
+        result = []
+        keys = list(list_obj.keys())
+        keys.remove(METADATA)
+        number_of_nones = 0
+        for i, k in enumerate(keys):
+            index = result.index(list_obj[k]) if list_obj[k] in result else -1
+            if list_obj[k] == None:
+                number_of_nones += 1
+                mapping[k] = -1
+            elif index != -1:
+                mapping[k] = index
+            else:
+                mapping[k] = i - number_of_nones
+                result.append(list_obj[k])
+        return mapping, result
+
+    def convert_to_graph(self, obj):
+        if not isinstance(obj, dict):
+            return obj
+        result = defaultify({})
+        obj = self.eliminate_lists(obj)
+        for k, v in obj.items():
+            result[k] = self.convert_to_graph(v)
+        return result
+
+    def eliminate_lists(self, obj):
+        if METADATA not in obj or LISTDATA not in obj[METADATA]:
+            return obj
+        result = obj.copy()
+        for k, v in obj[METADATA][LISTDATA].items():
+            recovered_list = {METADATA: v[METADATA]}
+            for orig_key, i in v[MAPPING].items():
+                if i != -1:
+                    recovered_list[orig_key] = obj[k][i]
+            result[k] = recovered_list
+        del result[METADATA][LISTDATA]
+        return result
         
-        Walks through the graph first to retrieve the soul of the list, \
-            Then updates the list in the db by resolving it first from the graph.
-        """
-        current = graph[root]
-        for e in path[:-1]:
-            current = graph[current[e][SOUL]]
-
-        list_id = current[path[-1]][SOUL]
-        self.update_normal(path, listify(resolve_v({SOUL: list_id}, graph)), root_object, schema, index)
-        return 0
-
-    def update_normal(self, path, value, root_object, schema, index):
-        """
-        Update a normal property.
-
-        Args:
-            path        (list): The keys to follow from root_object to reach the desired path.
-            value             : The value to be stored in this location.
-            root_object (dict): The root object from GUN graph.
-            schema      (str) : The schema of the root soul. Root soul is in the format schema://index
-            index       (str) : The index of the root soul.
-        """
-        
-        current = root_object
-        for e in path[:-1]:
-            try:
-
-                if not hasattr(current, e):
-                    setattr(current, e, type(root_object)())
-
-                current = getattr(current, e)
-            except:# The path doesn't exist in the db
-                # Ignore the request
-                logging.debug("Couldn't traverse the database for the found path.")
-                try:
-                    logging.debug('path: {}\n\n'.format(json.dumps([current] + path, indent = 4)))
-                except:
-                    # in case of current is dict with ObjectId from mongo
-                    logging.debug('path: {}\n\n'.format([current] + path))
-
-                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
-                return 0
-        #import ipdb;ipdb.set_trace()
-        setattr(current, path[-1], value)

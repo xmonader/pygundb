@@ -1,3 +1,5 @@
 METADATA = '_'
 STATE = '>'
 SOUL = '#'
+LISTDATA = 'L'
+MAPPING  = '[]'
