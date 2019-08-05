@@ -94,25 +94,27 @@ class BackendMixin:
     def delegate_list_metadatata(self, obj):
         if not isinstance(obj, dict):
             return obj
+        result = defaultify({})
         for k, v in obj.items():
-            if k == METADATA:
-                continue
             if k.startswith("list_"):
-                obj[k] = self.delegate_list_metadatata(v)
-                obj[METADATA][LISTDATA][k][METADATA] = v[METADATA]
+                result[k] = self.delegate_list_metadatata(v)
+                result[METADATA][LISTDATA][k][METADATA] = v[METADATA]
                 mapping, result_list = self.extract_mapping_list(obj[k])
-                obj[METADATA][LISTDATA][k][MAPPING] = mapping
-                obj[k] = result_list
+                result[METADATA][LISTDATA][k][MAPPING] = mapping
+                result[k] = result_list
+            elif k == METADATA:
+                result[k] = v
             else:
-                obj[k] = self.delegate_list_metadatata(v)
-        return obj
+                result[k] = self.delegate_list_metadatata(v)
+        return result
 
     def extract_mapping_list(self, list_obj):
-        mapping = {}
+        mapping = defaultify({})
         result = []
-        del list_obj[METADATA]
+        keys = list(list_obj.keys())
+        keys.remove(METADATA)
         number_of_nones = 0
-        for i, k in enumerate(list_obj.keys()):
+        for i, k in enumerate(keys):
             index = result.index(list_obj[k]) if list_obj[k] in result else -1
             if list_obj[k] == None:
                 number_of_nones += 1
@@ -136,11 +138,13 @@ class BackendMixin:
     def eliminate_lists(self, obj):
         if METADATA not in obj or LISTDATA not in obj[METADATA]:
             return obj
+        result = obj.copy()
         for k, v in obj[METADATA][LISTDATA].items():
             recovered_list = {METADATA: v[METADATA]}
             for orig_key, i in v[MAPPING].items():
                 if i != -1:
                     recovered_list[orig_key] = obj[k][i]
-            obj[k] = recovered_list
-        del obj[METADATA][LISTDATA]
-        return obj
+            result[k] = recovered_list
+        del result[METADATA][LISTDATA]
+        return result
+        
