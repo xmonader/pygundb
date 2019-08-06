@@ -27,4 +27,3 @@ def gun(ws):
             server.process_message(msgstr)  
     server.remove_peer(ws)
     print("Peers now are: ", server.peers)
-    return None
