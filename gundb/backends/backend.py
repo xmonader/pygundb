@@ -99,7 +99,7 @@ class BackendMixin:
             if k.startswith("list_"):
                 result[k] = self.delegate_list_metadatata(v)
                 result[METADATA][LISTDATA][k][METADATA] = v[METADATA]
-                mapping, result_list = self.extract_mapping_list(obj[k])
+                mapping, result_list = self.extract_mapping_list(result[k])
                 result[METADATA][LISTDATA][k][MAPPING] = mapping
                 result[k] = result_list
             elif k == METADATA:
