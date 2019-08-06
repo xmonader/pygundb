@@ -40,5 +40,5 @@ def gun(ws):
         if msgstr is not None:
             server.process_message(msgstr)  
     server.remove_peer(ws)
-    print("Peers now are: ", peers)
+    print("Peers now are: ", server.peers)
     return None
