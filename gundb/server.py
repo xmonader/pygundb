@@ -1,6 +1,6 @@
 from flask import Flask, request, send_from_directory, send_file, render_template, jsonify
 from flask_sockets import Sockets
-from .gunserver import GUNServer
+from .gunrequesthandler import GUNRequestHandler
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -16,7 +16,7 @@ print("APP: ", app)
 def send_public(path):
     return send_from_directory('static' + '/' + path)
 
-server = GUNServer()
+server = GUNRequestHandler()
 
 @sockets.route('/gun')
 def gun(ws):

@@ -10,10 +10,10 @@ import time
 import uuid
 import sys
 import traceback
-from .gunserver import GUNServer
+from .gunrequesthandler import GUNRequestHandler
 
 
-server = GUNServer()
+server = GUNRequestHandler()
 
 class GeventGunServer(WebSocketApplication):
     def on_open(self):

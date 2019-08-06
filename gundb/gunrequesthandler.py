@@ -8,8 +8,7 @@ import logging
 import json
 import uuid
 
-
-class GUNServer:
+class GUNRequestHandler:
     def __init__(self):
         self.backend = self._init_backend()
         self.graph = self.backend.recover_graph()
