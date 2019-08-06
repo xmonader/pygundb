@@ -1,20 +1,8 @@
 from flask import Flask, request, send_from_directory, send_file, render_template, jsonify
 from flask_sockets import Sockets
-from time import sleep
-import json
-import os
-from .utils import *
-from .backends import *
-from .backends.resolvers import is_root_soul, is_reference
-from .backends.graph import Graph
-import redis
-import time
-import uuid
-import sys
-import traceback
-import logging
-from collections import defaultdict
 from .gunserver import GUNServer
+import os
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -28,12 +16,10 @@ print("APP: ", app)
 def send_public(path):
     return send_from_directory('static' + '/' + path)
 
-peers = []
-graph = {}
+server = GUNServer()
 
 @sockets.route('/gun')
 def gun(ws):
-    server = GUNServer()
     server.add_peer(ws)
     while not ws.closed:
         msgstr = ws.receive()
