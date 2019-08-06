@@ -33,7 +33,7 @@ graph = {}
 
 @sockets.route('/gun')
 def gun(ws):
-    server = GUNServer(peers)
+    server = GUNServer()
     server.add_peer(ws)
     while not ws.closed:
         msgstr = ws.receive()
