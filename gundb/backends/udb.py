@@ -2,10 +2,14 @@ import dbm
 import json
 import os
 from ..consts import METADATA, STATE, SOUL
+
 # unix db
+
 
 def format_object_id(schema, id):
     return "{}://{}".format(schema, id)
+
+
 class UDB:
     def __init__(self, path="/tmp/gun.db"):
         if os.path.exists(path):
@@ -18,8 +22,8 @@ class UDB:
         try:
             return json.loads(self.db[full_id])
         except:
-            return  {'id':obj_id}
-    
+            return {"id": obj_id}
+
     def set_object_attr(self, obj, attr, val):
         obj[attr] = val
         return obj
