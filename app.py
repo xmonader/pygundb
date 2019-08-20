@@ -1,7 +1,7 @@
-from gundb import app
+from gundb.server import app
 
 
 print(app.url_map)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=10000)
+    app.run(port=8000)

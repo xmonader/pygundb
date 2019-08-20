@@ -1,4 +1,4 @@
-from gundb import geventserverapp
+from gundb.geventserver import geventserverapp
 
 
 if __name__ == "__main__":
