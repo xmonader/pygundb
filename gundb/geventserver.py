@@ -1,19 +1,11 @@
 from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
 from collections import OrderedDict
-from time import sleep
 import json
-import os
-from .utils import *
-from .backends import *
-import redis
-import time 
-import uuid
-import sys
-import traceback
 from .gunrequesthandler import GUNRequestHandler
 
 
 server = GUNRequestHandler()
+
 
 class GeventGunServer(WebSocketApplication):
     def on_open(self):
@@ -21,7 +13,7 @@ class GeventGunServer(WebSocketApplication):
         server.add_peer(self.ws)
 
     def on_message(self, message):
-        resp = {'ok':True}
+        resp = {"ok": True}
         if message is not None:
             server.process_message(message)
 
@@ -34,8 +26,5 @@ class GeventGunServer(WebSocketApplication):
         for client in self.ws.handler.server.clients.values():
             client.ws.send(json.dumps(resp))
 
-geventserverapp = WebSocketServer(
-    ('', 8000),
-    Resource(OrderedDict([('/', GeventGunServer)]))
-)
 
+geventserverapp = WebSocketServer(("", 8000), Resource(OrderedDict([("/", GeventGunServer)])))

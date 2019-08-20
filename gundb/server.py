@@ -12,18 +12,21 @@ sockets = Sockets(app)
 
 print("APP: ", app)
 
-@app.route('/static/<path:path>')
+
+@app.route("/static/<path:path>")
 def send_public(path):
-    return send_from_directory('static' + '/' + path)
+    return send_from_directory("static" + "/" + path)
+
 
 server = GUNRequestHandler()
 
-@sockets.route('/gun')
+
+@sockets.route("/gun")
 def gun(ws):
     server.add_peer(ws)
     while not ws.closed:
         msgstr = ws.receive()
         if msgstr is not None:
-            server.process_message(msgstr)  
+            server.process_message(msgstr)
     server.remove_peer(ws)
     print("Peers now are: ", server.peers)

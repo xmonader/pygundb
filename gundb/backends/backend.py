@@ -1,12 +1,12 @@
 import json
 import copy
 from ..consts import *
-from .resolvers import *
-from .utils import *
+from .resolvers import resolve_reference, resolve_v, is_root_soul, search, parse_schema_and_id
+from .utils import defaultify
 import logging
 from attributedict.collections import AttributeDict
 
-#def uniquify(lst):
+# def uniquify(lst):
 #    #lst might be a list of objects
 #    res = []
 #    for r in lst:
@@ -14,16 +14,17 @@ from attributedict.collections import AttributeDict
 #            res.append(r)
 #    return res
 
+
 class BackendMixin:
     def get_object_by_id(self, obj_id, schema=None):
         pass
 
     def set_object_attr(self, obj, attr, val):
         pass
-    
+
     def save_object(self, obj, obj_id, schema=None):
         pass
-    
+
     def recover_graph(self):
         pass
 
@@ -45,29 +46,33 @@ class BackendMixin:
             graph (dict): The updated GUN graph.
         """
 
-        logging.debug("\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n".format(soul, key, value, json.dumps(graph, indent = 4)))
+        logging.debug(
+            "\n\nPUT REQUEST:\nSoul: {}\nkey: {}\nvalue: {}\n graph:{}\n\n".format(
+                soul, key, value, json.dumps(graph, indent=4)
+            )
+        )
         if soul not in self.db:
-            self.db[soul] = {METADATA:{STATE:{}}}
+            self.db[soul] = {METADATA: {STATE: {}}}
         self.db[soul][key] = value
         self.db[soul][METADATA][STATE][key] = state
-        
+
         if isinstance(value, str):
             try:
                 value = json.loads(value)
             except:
-                pass 
+                pass
 
-        if is_root_soul(soul): # root object
+        if is_root_soul(soul):  # root object
             logging.debug("Direct property of a root object.")
             root = soul
             path = [key]
-        else: 
+        else:
             logging.debug("Nested soul that must be looked for.")
             path = search(soul, graph)
-            if not path: # Didn't find the soul referenced in any root object
+            if not path:  # Didn't find the soul referenced in any root object
                 # Ignore the request
                 logging.debug("Couldn't find soul :(")
-                #logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
+                # logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
             root = path[0]
             path = path[1:] + [key]
@@ -76,9 +81,8 @@ class BackendMixin:
         self.save_object(defaultify(root_object), index, schema)
         print("RECOVERD GRAPH: {}".format(json.dumps(self.recover_graph(), indent=4)))
 
-
     def get(self, soul, key=None):
-        ret = {SOUL: soul, METADATA:{SOUL:soul, STATE:{}}}
+        ret = {SOUL: soul, METADATA: {SOUL: soul, STATE: {}}}
 
         res = None
         if soul in self.db:
@@ -147,4 +151,4 @@ class BackendMixin:
             result[k] = recovered_list
         del result[METADATA][LISTDATA]
         return result
-        
+
