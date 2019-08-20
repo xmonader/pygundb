@@ -8,6 +8,7 @@ import logging
 import json
 import uuid
 
+
 class GUNRequestHandler:
     def __init__(self):
         self.backend = self._init_backend()
@@ -37,18 +38,26 @@ class GUNRequestHandler:
             backend = Pickle()
         elif backend_db == "udb":
             backend = UDB()
+        elif backend_db == "BCDB":
+            try:
+                from .backends import bcdb
+
+                backend = bcdb.BCDB()
+            except:
+                backend = Memory()
+
         return backend
 
     def _setup_logging(self):
-        os.makedirs('logs', exist_ok=True)
+        os.makedirs("logs", exist_ok=True)
         putid = 0
-        while os.path.exists('logs/app' + str(putid) + '.log'):
+        while os.path.exists("logs/app" + str(putid) + ".log"):
             putid += 1
-        logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode='w', level=logging.DEBUG)
+        logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode="w", level=logging.DEBUG)
         console = logging.StreamHandler()
         console.setLevel(logging.DEBUG)
         # set a format which is simpler for console use
-        formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
+        formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(message)s")
         console.setFormatter(formatter)
         logging.getLogger("").addHandler(console)
 
@@ -58,7 +67,7 @@ class GUNRequestHandler:
         return id_
 
     def process_message(self, msgstr):
-        resp = {'ok': True}
+        resp = {"ok": True}
         if msgstr is not None:
             msg = json.loads(msgstr)
             if not isinstance(msg, list):
@@ -67,30 +76,32 @@ class GUNRequestHandler:
             for payload in msg:
                 if isinstance(payload, str):
                     payload = json.loads(payload)
-                if 'put' in payload:
-                    change = payload['put']
-                    msgid = payload['#']
+                if "put" in payload:
+                    change = payload["put"]
+                    msgid = payload["#"]
                     diff = ham_mix(change, self.graph)
                     uid = self.trackid(str(uuid.uuid4()))
-                    resp = {'@': msgid, '#': uid, 'ok': True}
+                    resp = {"@": msgid, "#": uid, "ok": True}
                     # print("DIFF:", diff)
 
                     for soul, node in diff.items():
                         for k, v in diff[soul][METADATA].items():
                             if isinstance(v, dict):
-                                overalldiff[soul][METADATA][k] = dict(list(overalldiff[soul][METADATA][k].items()) + list(v.items()))
+                                overalldiff[soul][METADATA][k] = dict(
+                                    list(overalldiff[soul][METADATA][k].items()) + list(v.items())
+                                )
                             else:
                                 overalldiff[soul][METADATA][k] = v
                         for k, v in node.items():
                             if k == METADATA:
                                 continue
                             overalldiff[soul][k] = v
-                elif 'get' in payload:
+                elif "get" in payload:
                     uid = self.trackid(str(uuid.uuid4()))
-                    get = payload['get']
-                    msgid = payload['#']
+                    get = payload["get"]
+                    msgid = payload["#"]
                     ack = lex_from_graph(get, self.backend)
-                    resp = {'put': ack, '@': msgid, '#': uid, 'ok': True}
+                    resp = {"put": ack, "@": msgid, "#": uid, "ok": True}
             self.push_diffs(overalldiff)
             self.emit(resp)
             self.emit(msg)
@@ -131,16 +142,15 @@ class GUNRequestHandler:
                 self.backend.put(soul, k, v, state, self.graph)
         return self.graph
 
-
     def loggraph(self):
         for soul, node in self.graph.items():
             print("\nSoul: ", soul)
             print("\n\t\tNode: ", node)
             for k, v in node.items():
                 print("\n\t\t{} => {}".format(k, v))
-        
+
         print("TRACKED: ", self.trackedids, " #", len(self.trackedids))
-    
+
     def add_peer(self, ws):
         self.peers.append(ws)
 
