@@ -38,7 +38,7 @@ class GUNRequestHandler:
             backend = Pickle()
         elif backend_db == "udb":
             backend = UDB()
-        elif backend_db == "BCDB":
+        elif backend_db == "bcdb":
             try:
                 from .backends import bcdb
 
