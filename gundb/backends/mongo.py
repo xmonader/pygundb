@@ -50,8 +50,7 @@ class Mongo(BackendMixin):
             for obj in self.mongodb[schema].find({}):
                 full_schema_id = schema + "://" + str(obj["id"])
                 del obj["_id"]
-                if METADATA in obj:
-                    graph[full_schema_id] = self.convert_to_graph(obj)
+                graph[full_schema_id] = self.convert_to_graph(obj)
         return desolve(graph)
 
     def __setitem__(self, k, v):

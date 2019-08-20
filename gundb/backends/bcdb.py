@@ -132,10 +132,7 @@ class BCDB(BackendMixin):
         graph = {}
         for root_obj in root_objs:
             soul = json.loads(getattr(root_obj, BCDBMETADATA))[SOUL]
-            try:
-                graph[soul] = self.recover_obj(root_obj)
-            except:
-                pass
+            graph[soul] = self.recover_obj(root_obj)
         return desolve(graph)
 
     def recover_obj(self, root_obj):

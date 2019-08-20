@@ -39,11 +39,8 @@ class RedisKV(BackendMixin):
         root_souls = self.redis.keys(pattern="*://*")
         graph = {}
         for root_soul in root_souls:
-            try:
-                decoded = root_soul.decode("utf-8")
-                graph[decoded] = self.recover_obj(decoded)
-            except:
-                pass
+            decoded = root_soul.decode("utf-8")
+            graph[decoded] = self.recover_obj(decoded)
         return desolve(graph)
 
     def recover_obj(self, key):
