@@ -1,18 +1,8 @@
 import json
-import copy
 from ..consts import *
 from .resolvers import resolve_reference, resolve_v, is_root_soul, search, parse_schema_and_id
 from .utils import defaultify
 import logging
-from attributedict.collections import AttributeDict
-
-# def uniquify(lst):
-#    #lst might be a list of objects
-#    res = []
-#    for r in lst:
-#        if r not in res:
-#            res.append(r)
-#    return res
 
 
 class BackendMixin:
@@ -65,17 +55,14 @@ class BackendMixin:
         if is_root_soul(soul):  # root object
             logging.debug("Direct property of a root object.")
             root = soul
-            path = [key]
         else:
             logging.debug("Nested soul that must be looked for.")
-            path = search(soul, graph)
-            if not path:  # Didn't find the soul referenced in any root object
+            root = search(soul, graph)
+            if not root:  # Didn't find the soul referenced in any root object
                 # Ignore the request
                 logging.debug("Couldn't find soul :(")
                 # logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
                 return 0
-            root = path[0]
-            path = path[1:] + [key]
         schema, index = parse_schema_and_id(root)
         root_object = resolve_v({SOUL: root}, graph)
         self.save_object(defaultify(root_object), index, schema)

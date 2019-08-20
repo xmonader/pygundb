@@ -96,8 +96,8 @@ def resolve_v(val, graph):
 
 def search(k, graph):
     """
-    Returns a path in the graph that starts with a root object 
-    and references the passed soul k. [] if non found.
+    Returns the root object 
+    that references the passed soul k. None if non found.
     """
 
     def dfs(obj):
@@ -108,28 +108,22 @@ def search(k, graph):
                 continue
 
             if val.get("#") == k:  # The current value is a reference with the soul k (The one we're looking for)
-                return [key]
+                return True
             else:
-                if is_reference(val):  # The dict is a reference
-                    ## FIXME: raises when running node_tests
-                    try_child = dfs(graph[val["#"]])  # Search in the object it references
-                else:
-                    try_child = dfs(
-                        val
-                    )  # Otherwise, search in it directly (This case shouldn't be handled given the graph conforms to GUN rules)
-                if try_child:  # The reference is found in this child
-                    return [key] + try_child  # Shift the current key to the path and return it
-        return []  # No child succeded
+                if (
+                    is_reference(val) and dfs(graph[val["#"]]) or not is_reference and dfs(val)
+                ):  # The reference is found in this child
+                    return True
+        return False  # No child succeeded
 
     # only root objects is tried
     for key, val in graph.items():
         if is_root_soul(key):
-            try_child = dfs(val)
-            if try_child:
-                return [key] + try_child
+            if dfs(val):
+                return key
 
     # No soul found :(
-    return []
+    return None
 
 
 def desolve_obj(obj):

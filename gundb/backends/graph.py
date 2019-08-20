@@ -4,9 +4,10 @@ The Graph module manages a graph of nodes and applies put requests on these node
 A node represents a soul in the sent graph.
 """
 
-from .resolvers import *
+from .resolvers import is_reference, is_root_soul
 import json
-from ..consts import *
+from ..consts import STATE, METADATA
+
 
 class PutRequest:
     """
@@ -19,6 +20,7 @@ class PutRequest:
             state (dict): The state.
             graph (dict): The updated graph sent by gundb.
     """
+
     def __init__(self, soul, key, value, state, graph):
         self.soul = soul
         self.key = key
@@ -39,8 +41,8 @@ class PutRequest:
         Args:
             node_resolver (dict): A mapping between souls and node objects.
         """
-        assert(isinstance(self.value, dict) and '#' in self.value)
-        return node_resolver[self.value['#']]
+        assert isinstance(self.value, dict) and "#" in self.value
+        return node_resolver[self.value["#"]]
 
     def node_removed(self, node_resolver):
         """
@@ -50,9 +52,10 @@ class PutRequest:
             node_resolver (dict): A mapping between souls and node objects.
         """
         if self.key in self.graph[self.soul] and is_reference(self.graph[self.soul][self.key]):
-            return node_resolver[self.graph[self.soul][self.key]['#']]
+            return node_resolver[self.graph[self.soul][self.key]["#"]]
         else:
             return None
+
 
 class Node:
     """
@@ -63,6 +66,7 @@ class Node:
         requests (list[PutRequests]) : Requests that modifies some key belonging to the soul object directly.
         children (list[Node])        : Nodes that are referenced in some key belonging to the soul object directly.
     """
+
     def __init__(self, soul):
         self.soul = soul
         self.requests = []
@@ -79,7 +83,7 @@ class Node:
         for e in self.requests:
             e.dispatch(func)
         self.apply_to_children(func, node_resolver)
-    
+
     def apply_to_children(self, func, node_resolver):
         """
         Dispatches the put requests in the subtree (not including self).
@@ -109,8 +113,9 @@ class Node:
             node_resolber (dict): Mapping between souls and nodes.
         """
         for k, v in soul_obj.items():
-            if k != '_' and is_reference(v):
-                self.children.append(node_resolver[v['#']])
+            if k != "_" and is_reference(v):
+                self.children.append(node_resolver[v["#"]])
+
 
 class Graph:
     """
@@ -122,6 +127,7 @@ class Graph:
         graph (dict): The graph sent by GUN.
         nodes (dict): Mapping between souls and nodes.
     """
+
     def __init__(self, graph):
         self.graph = graph
         self.nodes = {}
@@ -134,7 +140,9 @@ class Graph:
         for soul, node in diffs.items():
             for k, v in node.items():
                 if k != METADATA:
-                    self.nodes[soul].add_put_request(PutRequest(soul, k, v, diffs[soul][METADATA][STATE][k], self.graph))
+                    self.nodes[soul].add_put_request(
+                        PutRequest(soul, k, v, diffs[soul][METADATA][STATE][k], self.graph)
+                    )
 
         for soul, node in diffs.items():
             if is_root_soul(soul):
