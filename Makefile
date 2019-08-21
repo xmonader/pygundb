@@ -1,5 +1,5 @@
 run: 
-	gunicorn -k flask_sockets.worker "test_server:build_app('$$gundb')"
+	gunicorn -k flask_sockets.worker "app:build_app('$$gundb')"
 
 doc:
 	python3 -m pdoc gundb --html --output-dir docs/api --force
