@@ -18,11 +18,11 @@ def send_public(path):
     return send_from_directory("static" + "/" + path)
 
 
-server = GUNRequestHandler()
 
 
 @sockets.route("/gun")
 def gun(ws):
+    server = app.config["handler"]
     server.add_peer(ws)
     while not ws.closed:
         msgstr = ws.receive()
