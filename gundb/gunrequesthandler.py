@@ -10,16 +10,15 @@ import uuid
 
 
 class GUNRequestHandler:
-    def __init__(self):
-        self.backend = self._init_backend()
+    def __init__(self, backend):
+        self.backend = self._init_backend(backend)
         self.graph = self.backend.recover_graph()
         if self.graph is None:
             self.graph = {}
         self.peers = []
         self.trackedids = []
 
-    def _init_backend(self):
-        backend_db = os.getenv("GUNDB", "mem")
+    def _init_backend(self, backend_db):
         print("backenddb var: ", backend_db)
         if backend_db == "mem":
             print("mem backend")
