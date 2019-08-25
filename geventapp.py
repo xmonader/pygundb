@@ -1,10 +1,8 @@
 import sys
 
+from geventwebsocket import WebSocketServer
 from gundb.geventserver import AppRunner, GeventGunServer
 from gundb.gunrequesthandler import GUNRequestHandler
-from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
-from collections import OrderedDict
-from functools import partialmethod
 
 if __name__ == "__main__":
     handler = GUNRequestHandler(sys.argv[1])

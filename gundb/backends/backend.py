@@ -1,22 +1,43 @@
 import json
-from ..consts import *
-from .resolvers import resolve_reference, resolve_v, is_root_soul, search, parse_schema_and_id
-from .utils import defaultify
 import logging
+
+from ..consts import METADATA, SOUL, STATE, LISTDATA, MAPPING
+from .resolvers import is_root_soul, parse_schema_and_id, resolve_v, search
+from .utils import defaultify
 
 
 class BackendMixin:
     def get_object_by_id(self, obj_id, schema=None):
-        pass
+        """Returns the object from the db as a defaultdict in the db form.
+
+        Args:
+            obj_id (int): The id of the object.
+            schema (str, optional): The schema of the object to be retrieved. Defaults to None.
+        """
 
     def set_object_attr(self, obj, attr, val):
-        pass
+        """sets the object's atribute (not used).
+
+        Args:
+            obj (Object): Object.
+            attr (str): Attribute.
+            val (any): Value.
+        """
 
     def save_object(self, obj, obj_id, schema=None):
-        pass
+        """Receives an object in gundb form and stores it in the backend database.
+
+        Args:
+            obj (defaultdict): The object to be saved.
+            obj_id (int): Its id.
+            schema (str, optional): Its schema url. Defaults to None.
+        """
 
     def recover_graph(self):
-        pass
+        """
+        Recovers the graph from the db.
+        It simply retrieves all the objects in the form schema://id and converts it to gundb from.
+        """
 
     def put(self, soul, key, value, state, graph):
         """
@@ -62,7 +83,7 @@ class BackendMixin:
                 # Ignore the request
                 logging.debug("Couldn't find soul :(")
                 # logging.debug("graph: {}\n\n".format(json.dumps(graph, indent = 4)))
-                return 0
+                return
         schema, index = parse_schema_and_id(root)
         root_object = resolve_v({SOUL: root}, graph)
         self.save_object(defaultify(root_object), index, schema)
@@ -83,6 +104,15 @@ class BackendMixin:
         return ret
 
     def delegate_list_metadatata(self, obj):
+        """
+        Moves the state object of all lists in obj to the parent object and converts it to a list.
+
+        Args:
+            obj (defaultdict): The dict representing the obj in gundb form.
+
+        Returns:
+            defaultdict: The object after delegating the list data and converting it to actual python lists.
+        """
         if not isinstance(obj, dict):
             return obj
         result = defaultify({})
@@ -100,6 +130,18 @@ class BackendMixin:
         return result
 
     def extract_mapping_list(self, list_obj):
+        """
+        It receives an object whose key starts with list_.
+        Then it converts it to a list by extracting the values of the list_obj.
+        The reverse operation is done by storing the mapping between the keys and
+             the indexes of values in the newly created list.
+
+        Args:
+            list_obj (defaultdict): A dict in gundb form that represents a list.
+
+        Returns:
+            defaultdict, list: The mapping between the values
+        """
         mapping = defaultify({})
         result = []
         keys = list(list_obj.keys())
@@ -107,7 +149,7 @@ class BackendMixin:
         number_of_nones = 0
         for i, k in enumerate(keys):
             index = result.index(list_obj[k]) if list_obj[k] in result else -1
-            if list_obj[k] == None:
+            if list_obj[k] is None:
                 number_of_nones += 1
                 mapping[k] = -1
             elif index != -1:
@@ -118,6 +160,16 @@ class BackendMixin:
         return mapping, result
 
     def convert_to_graph(self, obj):
+        """
+        Receives a dict representing the graph in the db form and converts it to gundb form.
+        In the db form, the lists are stored as actual lists and the metadata is delegated.
+
+        Args:
+            obj (defaultdict): The object in the db form.
+
+        Returns:
+            defaultdict: The graph in the gundb form.
+        """
         if not isinstance(obj, dict):
             return obj
         result = defaultify({})
@@ -127,6 +179,14 @@ class BackendMixin:
         return result
 
     def eliminate_lists(self, obj):
+        """Restores the list by fetchnig the mapping and its metadata and converts the list to gundb obj.
+        
+        Args:
+            obj (defaultdict): An object in the db form.
+        
+        Returns:
+            defaultdict: The first level of lists eliminated.
+        """
         if METADATA not in obj or LISTDATA not in obj[METADATA]:
             return obj
         result = obj.copy()
@@ -138,4 +198,3 @@ class BackendMixin:
             result[k] = recovered_list
         del result[METADATA][LISTDATA]
         return result
-
