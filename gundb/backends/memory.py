@@ -1,6 +1,7 @@
 from collections import defaultdict
 from .backend import BackendMixin
 
+
 class cuteobj:
     def __getattr__(self, attr):
         if attr in dir(self):
@@ -10,6 +11,7 @@ class cuteobj:
 
     def __str__(self):
         return "cuteobj: {} ".format(str(self.__dict__))
+
 
 class Memory(BackendMixin):
     def __init__(self):
@@ -25,6 +27,9 @@ class Memory(BackendMixin):
 
     def save_object(self, obj, obj_id, schema=None):
         self.objs[obj_id] = obj
+
+    def recover_graph(self):
+        return {}
 
     def __setitem__(self, k, v):
         self.db[k] = v

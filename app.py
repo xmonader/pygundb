@@ -1,7 +1,5 @@
-from gundb.server import app
-
-
-print(app.url_map)
-
-if __name__ == "__main__":
-    app.run(port=8000)
+from gundb.test import app
+from gundb.gunrequesthandler import GUNRequestHandler
+def build_app(backend):
+    app.config["handler"] = GUNRequestHandler(backend)
+    return app

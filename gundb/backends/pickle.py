@@ -3,16 +3,18 @@ from .backend import BackendMixin
 from pickle import loads, dumps
 import os
 
+
 def format_object_id(schema, id):
     return "{}://{}".format(schema, id)
+
 
 class Pickle(BackendMixin):
     def __init__(self, pickledbpath="/tmp/gundb.dat"):
         self.db = defaultdict(lambda: defaultdict(lambda: defaultdict()))
         self.pickledbpath = pickledbpath
         self.pickledb = None
-        if os.path.exists(self.pickledbpath ):
-            with open(self.pickledbpath , "rb") as f:
+        if os.path.exists(self.pickledbpath):
+            with open(self.pickledbpath, "rb") as f:
                 self.pickledb = loads(f.read())
         else:
             self.pickledb = {}
@@ -23,7 +25,7 @@ class Pickle(BackendMixin):
 
     def get_object_by_id(self, obj_id, schema=None):
         full_id = format_object_id(schema, obj_id)
-        return self.pickledb.get(full_id, {'id':obj_id})
+        return self.pickledb.get(full_id, {"id": obj_id})
 
     def set_object_attr(self, obj, attr, val):
         obj[attr] = val

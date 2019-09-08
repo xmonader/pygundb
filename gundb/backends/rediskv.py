@@ -4,14 +4,18 @@ from .utils import defaultify, fix_lists
 from .resolvers import desolve
 from ..consts import METADATA, SOUL, STATE
 import json
-ignore = '_'
+
+ignore = "_"
+
 
 def format_object_id(schema, id):
     return "{}://{}".format(schema, id)
 
+
 class RedisKV(BackendMixin):
     def __init__(self, host="127.0.0.1", port=6379):
         from redis import Redis
+
         self.db = defaultdict(lambda: defaultdict(lambda: defaultdict()))
         self.redis = Redis(host=host, port=port)
 
@@ -20,7 +24,7 @@ class RedisKV(BackendMixin):
         if self.redis.exists(full_id):
             return defaultify(json.loads(self.redis.get(full_id)))
         else:
-            return defaultify({'id':obj_id})
+            return defaultify({"id": obj_id})
 
     def set_object_attr(self, obj, attr, val):
         obj[attr] = val
@@ -35,14 +39,14 @@ class RedisKV(BackendMixin):
         root_souls = self.redis.keys(pattern="*://*")
         graph = {}
         for root_soul in root_souls:
-            decoded = root_soul.decode('utf-8')
-            graph[decoded] = self.recover_obj(decoded)    
+            decoded = root_soul.decode("utf-8")
+            graph[decoded] = self.recover_obj(decoded)
         return desolve(graph)
 
     def recover_obj(self, key):
         db_form = defaultify(json.loads(self.redis.get(key)))
         return self.convert_to_graph(db_form)
-    
+
     def __setitem__(self, k, v):
         self.db[k] = v
 
