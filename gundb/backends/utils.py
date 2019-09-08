@@ -22,7 +22,7 @@ def fix_lists(obj):
         return obj
     res = {}
     for k, v in obj.items():
-        if k.startswith("list_"):
+        if k.startswith('list_'):
             res[k] = listify(fix_lists(v))
         else:
             res[k] = fix_lists(v)
@@ -48,7 +48,7 @@ def get_first_list_prop(lst):
         lst {list}
     """
     for i, e in enumerate(lst):
-        if e.startswith("list_"):
+        if e.startswith('list_'):
             return i
     return -1
 

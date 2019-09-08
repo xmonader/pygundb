@@ -256,6 +256,6 @@ def test_resolve_v_copy_not_ref(graph, resolved_graph):
 
 
 def test_search(graph):
-    assert search('temp', graph) == 'author://1'
-    assert search('AlfMaskan', graph) == 'author://1'
-    assert search('pasta', graph) == 'author://1'
+    assert search('temp', graph) == ['author://1', 'location', 'temprature']
+    assert search('AlfMaskan', graph) == ['author://1', 'location', 'list_landmarks', 'random_key1']
+    assert search('pasta', graph) == ['author://1', 'food']

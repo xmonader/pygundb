@@ -1,5 +1,5 @@
-METADATA = "_"
-STATE = ">"
-SOUL = "#"
-LISTDATA = "L"
-MAPPING = "[]"
+METADATA = '_'
+STATE = '>'
+SOUL = '#'
+LISTDATA = 'L'
+MAPPING  = '[]'

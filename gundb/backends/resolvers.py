@@ -13,7 +13,6 @@ import re
 
 SCHEME_UID_PAT = "(?P<schema>.+?)://(?P<id>.+)"
 
-
 def parse_schema_and_id(s):
     """
     Returns the schema and id of the passed soul. None, None if doens't match a root soul.
@@ -22,9 +21,8 @@ def parse_schema_and_id(s):
     """
     m = re.match(SCHEME_UID_PAT, s)
     if m:
-        return m.groupdict()["schema"], int(m.groupdict()["id"])
+        return m.groupdict()['schema'], int(m.groupdict()['id']) 
     return None, None
-
 
 def is_root_soul(s):
     """
@@ -34,23 +32,18 @@ def is_root_soul(s):
     """
     return "://" in s
 
-
 def is_nested(s):
     return not is_root_soul(s)
 
-
 def get_nested_soul_node(s, graph):
     return graph.get(s, {})
-
 
 def filter_root_objects(graph):
     for kroot, rootnode in graph.items():
         if "://" in kroot:
             yield kroot, rootnode
 
-
 ignore = ["_", ">", "#"]
-
 
 def is_reference(d):
     """
@@ -58,8 +51,7 @@ def is_reference(d):
 
     A reference is a fict in the form {'#': soul}
     """
-    return isinstance(d, dict) and "#" in d
-
+    return isinstance(d, dict) and '#' in d
 
 def resolve_reference(ref, graph):
     """
@@ -67,20 +59,19 @@ def resolve_reference(ref, graph):
 
     Works recursively: All nested references are also resolved
     """
-    assert is_reference(ref)
-    if not ref["#"] in graph:  # The reference points to a non existent soul
-        # Shouldn't be reached
+    assert(is_reference(ref))
+    if not ref['#'] in graph: # The reference points to a non existent soul
+        #Shouldn't be reached
         return {}
 
     # Shallow copy the object from a graph without its meta data.
-    resolved = graph[ref["#"]].copy()
-
+    resolved = graph[ref['#']].copy()
+    
     for k, v in resolved.items():
         # Resolve reference items
         if not k in ignore and is_reference(v):
             resolved[k] = resolve_reference(v, graph)
     return resolved
-
 
 def resolve_v(val, graph):
     """
@@ -93,11 +84,10 @@ def resolve_v(val, graph):
     else:
         return val
 
-
 def search(k, graph):
     """
-    Returns the root object 
-    that references the passed soul k. None if non found.
+    Returns a path in the graph that starts with a root object 
+    and references the passed soul k. [] if non found.
     """
 
     def dfs(obj):
@@ -107,23 +97,27 @@ def search(k, graph):
             if key in ignore or not isinstance(val, dict):
                 continue
 
-            if val.get("#") == k:  # The current value is a reference with the soul k (The one we're looking for)
-                return True
+            if val.get('#') == k: # The current value is a reference with the soul k (The one we're looking for)
+                return [key]
             else:
-                if (
-                    is_reference(val) and dfs(graph[val["#"]]) or not is_reference and dfs(val)
-                ):  # The reference is found in this child
-                    return True
-        return False  # No child succeeded
-
+                if is_reference(val): # The dict is a reference
+                    ## FIXME: raises when running node_tests
+                    try_child = dfs(graph[val['#']]) # Search in the object it references
+                else:
+                    try_child = dfs(val) # Otherwise, search in it directly (This case shouldn't be handled given the graph conforms to GUN rules)
+                if try_child: # The reference is found in this child
+                    return [key] + try_child # Shift the current key to the path and return it
+        return [] # No child succeded
+    
     # only root objects is tried
     for key, val in graph.items():
         if is_root_soul(key):
-            if dfs(val):
-                return key
-
+            try_child = dfs(val)
+            if try_child:
+                return [key] + try_child
+    
     # No soul found :(
-    return None
+    return []
 
 
 def desolve_obj(obj):
@@ -132,8 +126,6 @@ def desolve_obj(obj):
     added_souls = defaultify({})
     for k, v in obj.items():
         if k != METADATA and isinstance(v, dict):
-            if METADATA not in v:
-                continue
             prop_soul = v[METADATA][SOUL]
             result[k] = defaultify({SOUL: prop_soul})
             desolved_prop, added_in_prop = desolve_obj(v)
@@ -146,12 +138,10 @@ def desolve_obj(obj):
 
 
 def desolve(graph):
-    """resolve a graph in expanded form and convert it to gundb form"""
+    """resolve a graph in expanded form and convert it to gundb form"""   
     result = defaultify({})
     added_souls = defaultify({})
     for k, v in graph.items():
-        if METADATA not in v:
-            continue
         prop_soul = v[METADATA][SOUL]
         result[prop_soul], added_souls_in_obj = desolve_obj(v)
         for k, v in added_souls_in_obj.items():
