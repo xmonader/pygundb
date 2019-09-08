@@ -15,7 +15,7 @@ class GeventGunServer(WebSocketApplication):
 
     """
 
-    def __init__(self, ws, handler):
+    def __init__(self, handler, ws):
         super().__init__(ws)
         self.handler = handler
 

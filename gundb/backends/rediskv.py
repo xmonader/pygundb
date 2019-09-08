@@ -44,7 +44,10 @@ class RedisKV(BackendMixin):
         return desolve(graph)
 
     def recover_obj(self, key):
-        db_form = defaultify(json.loads(self.redis.get(key)))
+        try:
+            db_form = defaultify(json.loads(self.redis.get(key)))
+        except Exception as e:
+            import ipdb; ipdb.set_trace()
         return self.convert_to_graph(db_form)
 
     def __setitem__(self, k, v):

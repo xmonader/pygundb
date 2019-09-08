@@ -1,11 +1,11 @@
 run: 
-	gunicorn -k flask_sockets.worker "app:build_app('GUNDB')"
+	gunicorn -k flask_sockets.worker "app:build_app('$$GUNDB')"
 
 doc:
 	python3 -m pdoc gundb --html --output-dir docs/api --force
 
 rungevent:
-	python3 geventapp.py GUNDB
+	python3 geventapp.py $$GUNDB
 
 clientall: clientdummy clientmem clientredis clientudb clientpickle
 
