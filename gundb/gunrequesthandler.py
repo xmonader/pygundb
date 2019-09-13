@@ -17,7 +17,7 @@ class GUNRequestHandler:
             self.graph = {}
         self.peers = []
         self.trackedids = []
-
+    
     def _init_backend(self, backend_db):
         print("backenddb var: ", backend_db)
         if backend_db == "mem":
@@ -81,7 +81,7 @@ class GUNRequestHandler:
                     diff = ham_mix(change, self.graph)
                     uid = self.trackid(str(uuid.uuid4()))
                     resp = {"@": msgid, "#": uid, "ok": True}
-                    # print("DIFF:", diff)
+                    print("DIFF:", diff)
 
                     for soul, node in diff.items():
                         for k, v in diff[soul][METADATA].items():
@@ -104,6 +104,8 @@ class GUNRequestHandler:
             self.push_diffs(overalldiff)
             self.emit(resp)
             self.emit(msg)
+
+    on_message = process_message
 
     def emit(self, data):
         resp = json.dumps(data)
