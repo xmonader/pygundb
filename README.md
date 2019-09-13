@@ -11,8 +11,8 @@ minimal `gun.js` implementation in python
 
 ## Dev install
 - clone the repo
-- `pipenv shell`
-- `pipenv install`
+- `poetry install`
+- `poetry shell`
 
 ## Running (flasksockets server)
 Execute `make run`

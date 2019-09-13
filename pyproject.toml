@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pygundb"
+version = "0.1.0"
+description = "gundb server and client implementation in python"
+authors = ["xmonader <xmonader@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+flask = "^1.1"
+gunicorn = "^19.9"
+redis = "^3.3"
+gevent-websocket = "^0.10.1"
+websockets = "^8.0"
+Flask-Sockets = "^0.2.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
