@@ -1,23 +1,47 @@
+import json
+import asyncio
+import websockets
 from .backends.utils import defaultify
 from .backends import Memory, Mongo, Pickle, RedisKV, DummyKV, UDB
 from .backends.resolvers import is_reference, is_root_soul
-from .utils import lex_from_graph, ham_mix
-from .consts import METADATA, STATE
+from .utils import lex_from_graph, ham_mix, newuid, new_node
+from .consts import METADATA, STATE, SOUL
 import os
 import logging
 import json
 import uuid
 
+def format_put_request(soul, **kwargs):
+    ch = {
+        SOUL: newuid(),
+        'put': {
+            soul: new_node(soul, **kwargs)
+        } 
+    }
+    return ch 
 
-class GUNRequestHandler:
-    def __init__(self, backend):
+def format_get_request(soul):
+    ch = {
+        SOUL: newuid(),
+        'get': {
+            SOUL: soul
+        } 
+    }
+    return ch 
+
+
+class GunClient:
+    def __init__(self, backend="mem", wsendpoint="ws://localhost:8000/gun"):
+        self.wsendpoint = wsendpoint
+        self.ws = None
         self.backend = self._init_backend(backend)
         self.graph = self.backend.recover_graph()
         if self.graph is None:
             self.graph = {}
         self.peers = []
         self.trackedids = []
-    
+
+
     def _init_backend(self, backend_db):
         print("backenddb var: ", backend_db)
         if backend_db == "mem":
@@ -40,7 +64,6 @@ class GUNRequestHandler:
         elif backend_db == "bcdb":
             try:
                 from .backends import bcdb
-
                 backend = bcdb.BCDB()
             except:
                 backend = Memory()
@@ -48,11 +71,11 @@ class GUNRequestHandler:
         return backend
 
     def _setup_logging(self):
-        os.makedirs("logs", exist_ok=True)
+        os.makedirs("clientlogs", exist_ok=True)
         putid = 0
-        while os.path.exists("logs/app" + str(putid) + ".log"):
+        while os.path.exists("clientlogs/app" + str(putid) + ".log"):
             putid += 1
-        logging.basicConfig(filename="logs/app" + str(putid) + ".log", filemode="w", level=logging.DEBUG)
+        logging.basicConfig(filename="clientlogs/app" + str(putid) + ".log", filemode="w", level=logging.DEBUG)
         console = logging.StreamHandler()
         console.setLevel(logging.DEBUG)
         # set a format which is simpler for console use
@@ -64,7 +87,27 @@ class GUNRequestHandler:
         if id_ not in self.trackedids:
             self.trackedids.append(id_)
         return id_
+    async def put(self, soul, **kwargs):
+        async with websockets.connect(self.wsendpoint) as ws:
+            ch = format_put_request(soul, **kwargs)
+            ch_str = json.dumps(ch)
+            # print("Change: {} ".format(ch))
+            await ws.send(ch_str)
+            resp = await ws.recv()
+            await ws.send(self.process_message(resp))
+            await ws.send(resp)
 
+    async def get(self, soul, key=None):
+        async with websockets.connect(self.wsendpoint) as ws:
+            ch = format_get_request(soul)
+            ch_str = json.dumps(ch)
+            # print("Change: {} ".format(ch))
+            await ws.send(ch_str)
+            resp = await ws.recv()
+            await ws.send(self.process_message(resp))
+            await ws.send(resp)
+
+ 
     def process_message(self, msgstr):
         resp = {"ok": True}
         if msgstr is not None:
@@ -102,17 +145,8 @@ class GUNRequestHandler:
                     ack = lex_from_graph(get, self.backend)
                     resp = {"put": ack, "@": msgid, "#": uid, "ok": True}
             self.push_diffs(overalldiff)
-            self.emit(resp)
-            self.emit(msg)
+            return json.dumps(resp)
 
-    on_message = process_message
-
-    def emit(self, data):
-        resp = json.dumps(data)
-        print("emitting :",  data)
-        for p in self.peers:
-            # print("Sending resp: ", resp, " to ", p)
-            p.send(resp)
 
     def push_diffs(self, diff):
         """
@@ -143,17 +177,3 @@ class GUNRequestHandler:
                 self.backend.put(soul, k, v, state, self.graph)
         return self.graph
 
-    def loggraph(self):
-        for soul, node in self.graph.items():
-            print("\nSoul: ", soul)
-            print("\n\t\tNode: ", node)
-            for k, v in node.items():
-                print("\n\t\t{} => {}".format(k, v))
-
-        print("TRACKED: ", self.trackedids, " #", len(self.trackedids))
-
-    def add_peer(self, ws):
-        self.peers.append(ws)
-
-    def remove_peer(self, ws):
-        self.peers.remove(ws)

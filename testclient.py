@@ -20,10 +20,10 @@ async def test():
     c = GunClient()
     c.backend = backend
     print(c.backend.db)
-    await c.put('box', w=101, h=30)
-    box = await c.get('box')
+    await c.put('box://1', w=101, h=30)
+    box = await c.get('box://1')
     print("Box is: ", box)
-    w = await c.get('box', 'w')
+    w = await c.get('box://1', 'w')
     print("W is : ", w)
     print(c.backend.db)
 
