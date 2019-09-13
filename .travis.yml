@@ -1,2 +1,11 @@
 language: python
-script: python -m pytest tests/test_resolvers.py
+python:
+  - "3.6"
+cache: pip
+
+install:
+  - pip install poetry
+
+script:
+  - poetry install -vvv
+  - poetry run pytest tests/
