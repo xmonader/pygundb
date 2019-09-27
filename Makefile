@@ -4,6 +4,13 @@ run:
 doc:
 	python3 -m pdoc gundb --html --output-dir docs/api --force
 
+pyproject.lock: pyproject.toml
+	poetry lock
+	@ touch $@
+
+requirements.txt: pyproject.lock
+	poetry run pip freeze > $@
+
 rungevent:
 	python3 geventapp.py $$GUNDB
 
