@@ -1,0 +1,13 @@
+Click==7.0
+Flask==1.1.1
+Flask-Sockets==0.2.1
+gevent==1.4.0
+gevent-websocket==0.10.1
+greenlet==0.4.15
+gunicorn==19.9.0
+itsdangerous==1.1.0
+Jinja2==2.10.1
+MarkupSafe==1.1.1
+redis==3.3.8
+websockets==8.0.2
+Werkzeug==0.15.6
