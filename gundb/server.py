@@ -10,8 +10,6 @@ app = Flask(__name__)
 
 sockets = Sockets(app)
 
-print("APP: ", app)
-
 
 @app.route("/static/<path:path>")
 def send_public(path):
