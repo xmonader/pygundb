@@ -163,4 +163,4 @@ We use Gun.js javascript client to communicate with pygundb as normal, but with 
 
 
 # API usage 
-pygundb [documentation](https://xmonader.github.io/pygundb/api/gundb/)
+pygundb [documentation](https://xmonader.github.io/pygundb/docs/api/gundb/)
