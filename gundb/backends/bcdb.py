@@ -107,8 +107,7 @@ class BCDB(BackendMixin):
             # o.save()
 
     def get_schema_by_url(self, url):
-        schema = j.data.schema.get_from_url_latest(url=url)
-        return schema
+        return j.data.schema.get_from_url_latest(url=url)
 
     def get_model_by_schema_url(self, schema_url):
 

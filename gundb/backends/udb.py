@@ -12,10 +12,7 @@ def format_object_id(schema, id):
 
 class UDB:
     def __init__(self, path="/tmp/gun.db"):
-        if os.path.exists(path):
-            self.db = dbm.open(path)
-        else:
-            self.db = dbm.open(path, "c")
+        self.db = dbm.open(path) if os.path.exists(path) else dbm.open(path, "c")
 
     def get_object_by_id(self, obj_id, schema=None):
         full_id = format_object_id(schema, obj_id)

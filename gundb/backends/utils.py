@@ -8,7 +8,7 @@ def uniquify(lst):
     """
     res = []
     for item in lst:
-        if not item in res:
+        if item not in res:
             res.append(item)
     return res
 
@@ -20,13 +20,10 @@ def fix_lists(obj):
     """
     if not isinstance(obj, dict):
         return obj
-    res = {}
-    for k, v in obj.items():
-        if k.startswith("list_"):
-            res[k] = listify(fix_lists(v))
-        else:
-            res[k] = fix_lists(v)
-    return res
+    return {
+        k: listify(fix_lists(v)) if k.startswith("list_") else fix_lists(v)
+        for k, v in obj.items()
+    }
 
 
 def listify(attr):
@@ -60,10 +57,7 @@ def defaultify(d):
     "Converts a dict to a nested default dicts"
     res = defaultdict(rec_dd)
     for k, v in d.items():
-        if isinstance(v, dict):
-            res[k] = defaultify(v)
-        else:
-            res[k] = v
+        res[k] = defaultify(v) if isinstance(v, dict) else v
     return res
 
 

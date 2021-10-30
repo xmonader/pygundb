@@ -68,7 +68,7 @@ def resolve_reference(ref, graph):
     Works recursively: All nested references are also resolved
     """
     assert is_reference(ref)
-    if not ref["#"] in graph:  # The reference points to a non existent soul
+    if ref["#"] not in graph:  # The reference points to a non existent soul
         # Shouldn't be reached
         return {}
 
@@ -77,7 +77,7 @@ def resolve_reference(ref, graph):
 
     for k, v in resolved.items():
         # Resolve reference items
-        if not k in ignore and is_reference(v):
+        if k not in ignore and is_reference(v):
             resolved[k] = resolve_reference(v, graph)
     return resolved
 
@@ -109,11 +109,10 @@ def search(k, graph):
 
             if val.get("#") == k:  # The current value is a reference with the soul k (The one we're looking for)
                 return True
-            else:
-                if (
-                    is_reference(val) and dfs(graph[val["#"]]) or not is_reference and dfs(val)
-                ):  # The reference is found in this child
-                    return True
+            if (
+                is_reference(val) and dfs(graph[val["#"]]) or not is_reference and dfs(val)
+            ):  # The reference is found in this child
+                return True
         return False  # No child succeeded
 
     # only root objects is tried

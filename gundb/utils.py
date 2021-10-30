@@ -45,9 +45,13 @@ def get_state_of(node, key):
 
 
 def new_node(name, **kwargs):
-    # node with meta
-    node = {METADATA: {SOUL: name, STATE: {k: get_current_state() for k in kwargs}}, **kwargs}
-    return node
+    return {
+        METADATA: {
+            SOUL: name,
+            STATE: {k: get_current_state() for k in kwargs},
+        },
+        **kwargs,
+    }
 
 
 def ensure_state(node):
@@ -87,9 +91,6 @@ def HAM(machine_state, incoming_state, current_state, incoming_value, current_va
 
     if incoming_state < current_state:
         return {"historical": True}
-
-    if incoming_state < current_state:
-        return {"converge": True, "incoming": True}
 
     # conflict here.
     if incoming_state == current_state:
@@ -160,7 +161,4 @@ def lex_from_graph(lex, db):
         node[METADATA][STATE][key] = tmp[key]
         node[METADATA][SOUL] = node[SOUL]
 
-    ack = {}
-    ack[soul] = node
-
-    return ack
+    return {soul: node}
