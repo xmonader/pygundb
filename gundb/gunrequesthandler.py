@@ -33,8 +33,6 @@ class GUNRequestHandler:
             backend = RedisKV()
         elif backend_db == "dummy":
             backend = DummyKV()
-        elif backend_db == "pickle":
-            backend = Pickle()
         elif backend_db == "udb":
             backend = UDB()
         elif backend_db == "bcdb":

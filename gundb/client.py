@@ -12,22 +12,20 @@ import json
 import uuid
 
 def format_put_request(soul, **kwargs):
-    ch = {
+    return {
         SOUL: newuid(),
         'put': {
             soul: new_node(soul, **kwargs)
         } 
-    }
-    return ch 
+    } 
 
 def format_get_request(soul):
-    ch = {
+    return {
         SOUL: newuid(),
         'get': {
             SOUL: soul
         } 
-    }
-    return ch 
+    } 
 
 
 class GunClient:
@@ -57,8 +55,6 @@ class GunClient:
             backend = RedisKV()
         elif backend_db == "dummy":
             backend = DummyKV()
-        elif backend_db == "pickle":
-            backend = Pickle()
         elif backend_db == "udb":
             backend = UDB()
         elif backend_db == "bcdb":
