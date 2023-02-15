@@ -10,4 +10,4 @@ Jinja2==2.10.1
 MarkupSafe==1.1.1
 redis==3.3.8
 websockets==8.0.2
-Werkzeug==0.15.6
+Werkzeug==2.2.3
